@@ -34,9 +34,11 @@ budget <- read.csv('data/original/FY2013-2018_National_Forest_Allotment.csv')
 pals <- read.csv('data/original/pals_ongoing_projects_11-2022.csv', sep = ";")
 
 ## 01 Process the Data
-# Pals: convert date columns from characters to datetime?
-# Pals: drop extraneous columns
-# Pals: 
+# Pals: convert date columns from characters to datetime
+# Pals: filter for NEPA initiation >= 2009-01-01 and drop extraneous columns (tbd)
+# Pals: filter for Completed (no censoring this time?)
+
+
 
 # To join I need to strip the leading 0 from FORESTORGC in the shapefile. 
 # Change the numeric budget$Unit to a string

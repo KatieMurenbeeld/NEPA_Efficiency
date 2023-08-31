@@ -9,43 +9,34 @@ library(dplyr)
 library(tidyr)
 library(transformr)
 
+#library(tidyverse)
+library(forcats)
+library(survminer)
+library(survival)
+library(lubridate)
+library(reshape2)
+#library(ggplot2)
+library(ggpubr)
+library(fastDummies)
+library(chron)
+library(vtable)
 
-# Practice making base maps using the ggplot2 and maps
-which_state <- "idaho"
-county_info <- map_data("county", region=which_state)
+## 00 Load Data
 
-state_info <- map_data("state")
+# Set working directory
+setwd('/Users/kathrynmurenbeeld/Analysis/NEPA_Efficiency/')
 
-idaho_map <- ggplot(data = county_info, mapping = aes(x = long, y = lat, group = group)) +
-  geom_polygon(color = "black", fill = "white") +
-  coord_quickmap() +
-  theme_void() 
+# Join the X data to the shape file data for forests and regions
+states <- st_read('data/original/cb_2018_us_state_5m/cb_2018_us_state_5m.shp')
+counties <- st_read('data/original/S_USA.ALPGeopoliticalUnit/S_USA.ALPGeopoliticalUnit.shp')
+forests <- st_read('data/original/S_USA.AdministrativeForest/S_USA.AdministrativeForest.shp')
+budget <- read.csv('data/original/FY2013-2018_National_Forest_Allotment.csv')
+pals <- read.csv('data/original/pals_ongoing_projects_11-2022.csv', sep = ";")
 
-idaho_map
-
-us_map <- ggplot(data = state_info, mapping = aes(x = long, y = lat, group = group)) + 
-  geom_polygon(color = "black", fill = "white") + 
-  coord_quickmap() + 
-  theme_void()
-
-us_map
-
-# Practice joining the budget data to the shape file data for forests and regions
-states <- st_read('cb_2018_us_state_5m/cb_2018_us_state_5m.shp')
-counties <- st_read('S_USA.ALPGeopoliticalUnit/S_USA.ALPGeopoliticalUnit.shp')
-forests <- st_read('S_USA.AdministrativeForest/S_USA.AdministrativeForest.shp')
-
-# plotting takes foreverrr. Ask Matt about this. May need to work on his remote desktop when 
-# working with spatial data. Need to remind myself how to do that. 
-## Matt said to save the plots and look at them outside of Rstudio. ggsave for ggplot objects
-## png() for base plot
-
-#ggplot() + 
-#  geom_sf(data = test, size = 3, color = "black", fill = "green") + 
-#  ggtitle("Test Forest Plot") + 
-#  coord_sf()
-
-budget <- read.csv('FY2013-2018_National_Forest_Allotment.csv')
+## 01 Process the Data
+# Pals: convert date columns from characters to datetime?
+# Pals: drop extraneous columns
+# Pals: 
 
 # To join I need to strip the leading 0 from FORESTORGC in the shapefile. 
 # Change the numeric budget$Unit to a string

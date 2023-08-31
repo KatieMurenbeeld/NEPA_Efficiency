@@ -203,11 +203,11 @@ joined_probs_dn <- left_join(regions, probs_df_dn, by = "REGION")
 
 # Test plot map
 prob_dm_map <- ggplot() + 
-  geom_sf(data = states, size = 0.5) + 
+  #geom_sf(data = states, size = 0.5) + 
   geom_sf(data = joined_probs_dm, size = 0.5, aes(fill = estimate)) + 
   ggtitle("Test Forest Plot") + 
   coord_sf()
-ggsave("test_reg_dm_surv_prob.png", prob_dm_map)
+ggsave("test_reg_dm_surv_prob.pdf", prob_dm_map)
 dev.off()
 
 # To join I need to strip the leading 0 from FORESTORGC in the shapefile. 

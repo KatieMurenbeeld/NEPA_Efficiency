@@ -28,6 +28,7 @@ library(vtable)
 setwd('/Users/kathrynmurenbeeld/Analysis/NEPA_Efficiency/')
 
 # Join the X data to the shape file data for forests and regions
+regions <- st_read('data/original/S_USA.AdministrativeRegion/S_USA.AdministrativeRegion.shp')
 states <- st_read('data/original/cb_2018_us_state_5m/cb_2018_us_state_5m.shp')
 counties <- st_read('data/original/S_USA.ALPGeopoliticalUnit/S_USA.ALPGeopoliticalUnit.shp')
 forests <- st_read('data/original/S_USA.AdministrativeForest/S_USA.AdministrativeForest.shp')
@@ -124,6 +125,7 @@ eia_forest <- pals2009_df %>%
   summarise(ave = mean(ELAPSED.DAYS))
 
 eia_count_forest <- pals2009_df %>%
+  group_by(DECISION.TYPE) %>%
   count(FOREST_ID)
 
 # May need to go by region and nepa
@@ -144,6 +146,69 @@ one_year_reg_nepa <- fit_reg_nepa_summary %>%
 
 two_year_reg_nepa <- fit_reg_nepa_summary %>%
   filter(time == 730)
+
+# Create new dataframes by NEPA type
+pals2009_rod <- pals2009_df %>%
+  filter(DECISION.TYPE == "ROD")
+pals2009_dn <- pals2009_df %>%
+  filter(DECISION.TYPE == "DN")
+pals2009_dm <- pals2009_df %>%
+  filter(DECISION.TYPE == "DM")
+
+mod_rod_reg <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ REGION_ID, data = pals2009_rod)
+mod_dn_reg <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ REGION_ID, data = pals2009_dn)
+mod_dm_reg <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ REGION_ID, data = pals2009_dm)
+
+rod_reg_summary <- mod_rod_reg %>% tidy()
+dn_reg_summary <- mod_dn_reg %>% tidy()
+dm_reg_summary <- mod_dm_reg %>% tidy()
+
+one_year_rod_reg <- rod_reg_summary %>%
+  filter(time == 365)
+one_year_dn_reg <- dn_reg_summary %>%
+  filter(time == 365)
+one_year_dm_reg <- dm_reg_summary %>%
+  filter(time == 365)
+
+two_year_rod_reg <- rod_reg_summary %>%
+  filter(time == 730)
+two_year_dn_reg <- dn_reg_summary %>%
+  filter(time == 730)
+two_year_dm_reg <- dm_reg_summary %>%
+  filter(time == 730)
+
+# Make a new dataframe to join to regions shapefile
+probs_df_dm <- rbind(one_year_dm_reg, two_year_dm_reg) %>%
+  select(c(time, estimate, strata)) %>%
+  mutate(DECISION_TYPE = "DM") %>%
+  rename(REGION = strata)
+
+probs_df_dn <- rbind(one_year_dn_reg, two_year_dn_reg) %>%
+  select(c(time, estimate, strata)) %>%
+  mutate(DECISION_TYPE = "DN") %>%
+  rename(REGION = strata)
+
+probs_df_dn$REGION <- str_remove(probs_df_dn$REGION, "REGION_ID=")
+probs_df_dn$REGION <- str_pad(probs_df_dn$REGION, 2, pad = "0")
+
+probs_df_dm$REGION <- str_remove(probs_df_dm$REGION, "REGION_ID=")
+probs_df_dm$REGION <- str_pad(probs_df_dm$REGION, 2, pad = "0")
+#rename strata to REGION
+probs_dn_dm <- rbind(probs_df_dm, probs_df_dn)
+
+# Join probs_dn_dm to regions
+joined_probs <- left_join(regions, probs_dn_dm, by = "REGION")
+joined_probs_dm <- left_join(regions, probs_df_dm, by = "REGION")
+joined_probs_dn <- left_join(regions, probs_df_dn, by = "REGION")
+
+# Test plot map
+prob_dm_map <- ggplot() + 
+  geom_sf(data = states, size = 0.5) + 
+  geom_sf(data = joined_probs_dm, size = 0.5, aes(fill = estimate)) + 
+  ggtitle("Test Forest Plot") + 
+  coord_sf()
+ggsave("test_reg_dm_surv_prob.png", prob_dm_map)
+dev.off()
 
 # To join I need to strip the leading 0 from FORESTORGC in the shapefile. 
 # Change the numeric budget$Unit to a string

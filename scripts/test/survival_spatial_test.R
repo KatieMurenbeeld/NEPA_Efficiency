@@ -38,7 +38,9 @@ pals <- read.csv('data/original/pals_ongoing_projects_11-2022.csv', sep = ";")
 # Pals: filter for NEPA initiation >= 2009-01-01 and drop extraneous columns (tbd)
 # Pals: filter for Completed (no censoring this time?)
 
-
+pals_df <- select(pals, c(FOREST_ID, PROJECT.NUMBER, PROJECT.NAME, PROJECT.STATUS,
+                          PROJECT.CREATED, INITIATION.DATE, DECISION.SIGNED, DECISION.TYPE,
+                          ELAPSED.DAYS, DECISION_LEVEL, ongoing))
 
 # To join I need to strip the leading 0 from FORESTORGC in the shapefile. 
 # Change the numeric budget$Unit to a string

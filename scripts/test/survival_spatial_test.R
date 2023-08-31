@@ -7,6 +7,7 @@ library(sf)
 library(stringr)
 library(dplyr)
 library(tidyr)
+library(broom)
 library(transformr)
 
 #library(tidyverse)
@@ -38,9 +39,111 @@ pals <- read.csv('data/original/pals_ongoing_projects_11-2022.csv', sep = ";")
 # Pals: filter for NEPA initiation >= 2009-01-01 and drop extraneous columns (tbd)
 # Pals: filter for Completed (no censoring this time?)
 
-pals_df <- select(pals, c(FOREST_ID, PROJECT.NUMBER, PROJECT.NAME, PROJECT.STATUS,
+# PALS: select desired columns/variables
+pals_df <- select(pals, c(REGION_ID, FOREST_ID, PROJECT.NUMBER, PROJECT.NAME, PROJECT.STATUS,
                           PROJECT.CREATED, INITIATION.DATE, DECISION.SIGNED, DECISION.TYPE,
                           ELAPSED.DAYS, DECISION_LEVEL, ongoing))
+
+# PALS: create a binary column to serve as the Event Occurring for the survival analysis. 
+# Status of Completed = 1, every other status = 0. This will make In Progress and Cancelled projects = 0.
+pals_df$EVENT <- ifelse(pals_df$PROJECT.STATUS == "Complete", 1, 0)
+
+# PALS: replace NA with 0 for ongoing
+pals_df$ongoing[is.na(pals_df$ongoing)] <- 0
+
+# PALS: make FOREST_ID a factor
+pals_df$FOREST_ID <- as.factor(pals_df$FOREST_ID)
+
+# PALS: filter by year initiated >2009-01-01 and status = Complete
+## First need to convert character strings to datetime or calendar time objects
+pals_df$PROJECT.CREATED <- as.Date(pals_df$PROJECT.CREATED, format = "%m/%d/%Y")
+pals_df$INITIATION.DATE <- as.Date(pals_df$INITIATION.DATE, format = "%m/%d/%Y")
+pals_df$DECISION.SIGNED <- as.Date(pals_df$DECISION.SIGNED, format = "%m/%d/%Y")
+
+## Then filter by year NEPA was initiated and (&) status = complete
+## Also remove Test Project TEST and project 35233
+pals2009_df <- pals_df %>%
+  filter(INITIATION.DATE > "2009-01-01" & PROJECT.STATUS == "Complete") %>%
+  filter(PROJECT.NAME != "Test Project TEST") %>%
+  filter(PROJECT.NUMBER != 35233) %>%
+  filter(ongoing == 0)
+
+# PALS: Survival Analysis, average survival % by forest at t duration = 1 year (365 days) 
+# and t duration = 2 years (730 days)
+
+fit_assess_all <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ 1, data = pals2009_df)
+fit_assess_summary <- fit_assess_all %>% tidy()
+
+one_year <- fit_assess_summary %>%
+  filter(time == 365)
+print(one_year$estimate)
+two_year <- fit_assess_summary %>%
+  filter(time == 730)
+print(two_year$estimate)
+
+# Plot for fun...
+km_fit_assess_all <- ggsurvplot(fit_assess_all,
+                                conf.int = TRUE,
+                                risk.table = FALSE,
+                                risk.table.col = "strata",
+                                surv.median.line = "hv",
+                                break.time.by = 365,
+                                risk.table.y.text=FALSE,
+                                censor = FALSE,
+                                ylab = "Probability that NEPA Assessment Incomplete",
+                                xlab = "NEPA Initiation to NEPA Signed (days)",
+                                palette = c("forestgreen"),
+                                surv.plot.height = 1,
+                                ggtheme = theme(aspect.ratio = 0.75, 
+                                                axis.line = element_line(colour = "black"),
+                                                panel.grid.major = element_line(colour = "grey"),
+                                                panel.border = element_blank(),
+                                                panel.background = element_blank()),
+                                tables.theme =  theme(aspect.ratio = 0.06)
+)
+print(km_fit_assess_all)
+
+# With the exception of the plot, make the above commands into a function or loop (or both? or neither?)
+# to get the average "estimate" for each forest, for each decision type (ROD, DN, DM) at time = 365 and at time = 730
+
+fit_assess_forest <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ FOREST_ID, data = pals2009_df)
+fit_forest_summary <- fit_assess_forest %>% tidy()
+
+one_year_forest <- fit_forest_summary %>%
+  filter(time == 365)
+
+fit_assess_forest_nepa <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ FOREST_ID + DECISION.TYPE, data = pals2009_df)
+fit_forest_nepa_summary <- fit_assess_forest_nepa %>% tidy()
+
+one_year_forest_nepa <- fit_forest_nepa_summary %>%
+  filter(time == 365)
+
+# Check the number of EIAs completed for each forest
+eia_forest <- pals2009_df %>%
+  group_by(FOREST_ID, DECISION.TYPE) %>%
+  summarise(ave = mean(ELAPSED.DAYS))
+
+eia_count_forest <- pals2009_df %>%
+  count(FOREST_ID)
+
+# May need to go by region and nepa
+fit_assess_reg <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ REGION_ID, data = pals2009_df)
+fit_reg_summary <- fit_assess_reg %>% tidy()
+
+one_year_reg <- fit_reg_summary %>%
+  filter(time == 365)
+
+two_year_reg <- fit_reg_summary %>%
+  filter(time == 730)
+
+fit_assess_reg_nepa <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ REGION_ID + DECISION.TYPE, data = pals2009_df)
+fit_reg_nepa_summary <- fit_assess_reg_nepa %>% tidy()
+
+one_year_reg_nepa <- fit_reg_nepa_summary %>%
+  filter(time == 365)
+
+two_year_reg_nepa <- fit_reg_nepa_summary %>%
+  filter(time == 730)
 
 # To join I need to strip the leading 0 from FORESTORGC in the shapefile. 
 # Change the numeric budget$Unit to a string

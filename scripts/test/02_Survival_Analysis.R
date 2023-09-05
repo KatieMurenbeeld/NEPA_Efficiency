@@ -18,10 +18,27 @@ fit_forest_summary <- fit_assess_forest %>% tidy()
 summary(fit_assess_forest, time = c(365, 730))$time
 
 forest_id_1yr <- data.frame(summary(fit_assess_forest, time = 365)$strata)
-time_1yr <- summary(fit_assess_forest, time = 365)$time
-surv_prob_1yr <- summary(fit_assess_forest, time = 365)$surv
+time_1yr <- data.frame(summary(fit_assess_forest, time = 365)$time)
+surv_prob_1yr <- data.frame(summary(fit_assess_forest, time = 365)$surv)
 
 forest_id_2yr <- data.frame(summary(fit_assess_forest, time = 730)$strata)
-time_2yr <- summary(fit_assess_forest, time = 730)$time
-surv_prob_2yr <- summary(fit_assess_forest, time = 730)$surv
+time_2yr <- data.frame(summary(fit_assess_forest, time = 730)$time)
+surv_prob_2yr <- data.frame(summary(fit_assess_forest, time = 730)$surv)
+
+# Create new data frames for the survival probabilities by forest at 1 and 2 years
+
+forests_1yr <- data.frame(forest_id_1yr, surv_prob_1yr) %>%
+  rename(FOREST_ID = summary.fit_assess_forest..time...365..strata, 
+         SURV = summary.fit_assess_forest..time...365..surv)
+forests_2yr <- data.frame(FOREST_ID = forest_id_2yr, SURV = surv_prob_2yr) %>%
+  rename(FOREST_ID = summary.fit_assess_forest..time...730..strata, 
+         SURV = summary.fit_assess_forest..time...730..surv)
+
+# n
+forests_1yr$FOREST_ID <- str_remove(forests_1yr$FOREST_ID, "FOREST_ID=")
+forests_2yr$FOREST_ID <- str_remove(forests_2yr$FOREST_ID, "FOREST_ID=")
+
+
+#forests_2yr$FOREST_ID <- str_pad(probs_df_dn$REGION, 2, pad = "0")
+
 

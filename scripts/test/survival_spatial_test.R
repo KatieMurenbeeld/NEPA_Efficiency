@@ -201,6 +201,13 @@ joined_probs <- left_join(regions, probs_dn_dm, by = "REGION")
 joined_probs_dm <- left_join(regions, probs_df_dm, by = "REGION")
 joined_probs_dn <- left_join(regions, probs_df_dn, by = "REGION")
 
+plot(joined_probs_dn["estimate"])
+
+# Test plot map
+ggplot() + 
+  geom_sf(data = joined_probs_dn, size = 0.5, aes(fill = estimate)) + 
+  ggtitle("Test Forest Plot") + 
+  coord_sf()
 # Test plot map
 prob_dm_map <- ggplot() + 
   #geom_sf(data = states, size = 0.5) + 

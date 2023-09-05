@@ -26,6 +26,9 @@ time_2yr <- data.frame(summary(fit_assess_forest, time = 730)$time)
 surv_prob_2yr <- data.frame(summary(fit_assess_forest, time = 730)$surv)
 
 # Create new data frames for the survival probabilities by forest at 1 and 2 years
+# Maybe just 1 data frame
+
+forest_surv <- data.frame(forest_id_1yr, time_1yr, surv_prob_1yr, time_2yr, surv_prob_2yr) 
 
 forests_1yr <- data.frame(forest_id_1yr, surv_prob_1yr) %>%
   rename(FOREST_ID = summary.fit_assess_forest..time...365..strata, 

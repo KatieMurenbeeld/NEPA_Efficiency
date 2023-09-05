@@ -17,6 +17,10 @@ pals_df$EVENT <- ifelse(pals_df$PROJECT.STATUS == "Complete", 1, 0)
 # PALS: replace NA with 0 for ongoing
 pals_df$ongoing[is.na(pals_df$ongoing)] <- 0
 
+# PALS: filter out experimental forests (FOREST_ID > 2400)
+pals_df <-pals_df %>%
+  filter(FOREST_ID < 2400)
+
 # PALS: make FOREST_ID a factor
 pals_df$FOREST_ID <- as.factor(pals_df$FOREST_ID)
 

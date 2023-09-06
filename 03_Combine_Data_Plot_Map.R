@@ -23,5 +23,13 @@ us_states <- states(cb = TRUE) %>%
 ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1)
 
+test_df <- joined_df %>%
+  filter(FORESTORGC == "0102" | FORESTORGC == "0103" | FORESTORGC == "0104")
+
 ggplot() +
-  geom_sf(data = joined_df, aes(fill = SURV_1YR))
+  geom_sf(data = test_df, aes(fill = SURV_1YR))
+
+ggplot() +
+  geom_sf(data = test_df, aes(fill = SURV_2YR))
+
+

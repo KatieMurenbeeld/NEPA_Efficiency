@@ -20,10 +20,10 @@ joined_df <- left_join(forest_boundary, forest_surv,
 
 us_states <- states(cb = TRUE) %>%
   filter(GEOID < "60") %>%
-  filter(GEOID != "02") %>%
-  filter(GEOID != "15") 
-  #shift_geometry(preserve_area = FALSE,
-  #               position = "outside")
+  #filter(GEOID != "02") %>%
+  #filter(GEOID != "15") 
+  shift_geometry(preserve_area = TRUE,
+                 position = "outside")
 ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1)
 

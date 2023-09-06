@@ -1,6 +1,7 @@
 ## Combine the survival probability by forest with the USFS Nation Forest Admin boundaries 
-
+library(tidyverse)
 library(sf)
+library(readr)
 library(ggplot2)
 library(ggmap)
 library(tigris)
@@ -18,18 +19,16 @@ joined_df <- left_join(forest_boundary, forest_surv,
 # May have to have this script combine the data and make a map.
 
 us_states <- states(cb = TRUE) %>%
-  shift_geometry()
+  filter(GEOID < "60") %>%
+  shift_geometry(preserve_area = FALSE,
+                 position = "outside")
 
 ggplot() +
-  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1)
-
-test_df <- joined_df %>%
-  filter(FORESTORGC == "0102" | FORESTORGC == "0103" | FORESTORGC == "0104")
+  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
+  geom_sf(data = joined_df, aes(fill = SURV_1YR), size = 0.1)
 
 ggplot() +
-  geom_sf(data = test_df, aes(fill = SURV_1YR))
-
-ggplot() +
-  geom_sf(data = test_df, aes(fill = SURV_2YR))
+  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
+  geom_sf(data = joined_df, aes(fill = SURV_2YR), size = 0.1)
 
 

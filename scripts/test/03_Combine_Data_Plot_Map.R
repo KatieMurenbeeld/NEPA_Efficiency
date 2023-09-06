@@ -29,13 +29,15 @@ ggplot() +
 
 nf_surv1yr <- ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
-  geom_sf(data = joined_df, aes(fill = SURV_1YR), size = 0.05)
+  geom_sf(data = joined_df, aes(fill = SURV_1YR), size = 0.05) + 
+  scale_fill_gradient(low = "white", high = "forestgreen")
 ggsave("nf_surv1yr.png", nf_surv1yr, width = 12, height = 12, dpi = 300)
 dev.off()
 
 nf_surv2yr <- ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
-  geom_sf(data = joined_df, aes(fill = SURV_2YR), size = 0.05)
+  geom_sf(data = joined_df, aes(fill = SURV_2YR), size = 0.05)+ 
+  scale_fill_gradient(low = "white", high = "forestgreen")
 ggsave("nf_surv2yr.png", nf_surv2yr, width = 12, height = 12, dpi = 300)
 dev.off()
 

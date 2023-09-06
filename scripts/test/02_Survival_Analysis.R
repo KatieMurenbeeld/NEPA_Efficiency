@@ -9,14 +9,18 @@ library(rms)
 df <- read_csv("data/processed/pals_2009.csv")
 # Note to self: may need to save REGION_ID and FOREST_ID as characters not numeric in 01_*.R
 
+# Fit a kaplan-meier survival curve to the entire data set
 fit_assess_all <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ 1, data = df)
-fit_assess_summary <- fit_assess_all %>% tidy()
 
+# print out the summary
+summary(fit_assess_all, time = c(365, 730))$surv
+
+# Do I want to have ALL, 0.19019984, 0.06784094 as a row in the data frame?
+
+# Fit a kaplan-meier survival curve to each forest
 fit_assess_forest <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ FOREST_ID, data = df)
-fit_forest_summary <- fit_assess_forest %>% tidy()
 
-summary(fit_assess_forest, time = c(365, 730))$time
-
+# Find the survival probability for each forest at time (t) duration of 1 year and 2 years 
 forest_id_1yr <- data.frame(summary(fit_assess_forest, time = 365)$strata)
 time_1yr <- data.frame(summary(fit_assess_forest, time = 365)$time)
 surv_prob_1yr <- data.frame(summary(fit_assess_forest, time = 365)$surv)
@@ -25,23 +29,18 @@ forest_id_2yr <- data.frame(summary(fit_assess_forest, time = 730)$strata)
 time_2yr <- data.frame(summary(fit_assess_forest, time = 730)$time)
 surv_prob_2yr <- data.frame(summary(fit_assess_forest, time = 730)$surv)
 
-# Create new data frames for the survival probabilities by forest at 1 and 2 years
-# Maybe just 1 data frame
+# Combine into a data frame
 
-forest_surv <- data.frame(forest_id_1yr, time_1yr, surv_prob_1yr, time_2yr, surv_prob_2yr) 
+forest_surv <- data.frame(forest_id_1yr, surv_prob_1yr, surv_prob_2yr) 
 
-forests_1yr <- data.frame(forest_id_1yr, surv_prob_1yr) %>%
-  rename(FOREST_ID = summary.fit_assess_forest..time...365..strata, 
-         SURV = summary.fit_assess_forest..time...365..surv)
-forests_2yr <- data.frame(FOREST_ID = forest_id_2yr, SURV = surv_prob_2yr) %>%
-  rename(FOREST_ID = summary.fit_assess_forest..time...730..strata, 
-         SURV = summary.fit_assess_forest..time...730..surv)
+# Rename the columns
+forest_surv <- forest_surv %>%
+  rename(FOREST_ID = summary.fit_assess_forest..time...365..strata,
+         SURV_1YR = summary.fit_assess_forest..time...365..surv,
+         SURV_2YR = summary.fit_assess_forest..time...730..surv)
 
-# n
-forests_1yr$FOREST_ID <- str_remove(forests_1yr$FOREST_ID, "FOREST_ID=")
-forests_2yr$FOREST_ID <- str_remove(forests_2yr$FOREST_ID, "FOREST_ID=")
-
-
-#forests_2yr$FOREST_ID <- str_pad(probs_df_dn$REGION, 2, pad = "0")
+# Strip the "FOREST_ID=" string before the Forest ID and pad with a 0
+forest_surv$FOREST_ID <- str_remove(forest_surv$FOREST_ID, "FOREST_ID=")
+forest_surv$FOREST_ID <- str_pad(forest_surv$FOREST_ID, 2, pad = "0")
 
 

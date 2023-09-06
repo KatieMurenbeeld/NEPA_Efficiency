@@ -20,15 +20,22 @@ joined_df <- left_join(forest_boundary, forest_surv,
 
 us_states <- states(cb = TRUE) %>%
   filter(GEOID < "60") %>%
-  shift_geometry(preserve_area = FALSE,
-                 position = "outside")
-
+  filter(GEOID != "02") %>%
+  filter(GEOID != "15") 
+  #shift_geometry(preserve_area = FALSE,
+  #               position = "outside")
 ggplot() +
-  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
-  geom_sf(data = joined_df, aes(fill = SURV_1YR), size = 0.1)
+  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1)
 
-ggplot() +
+nf_surv1yr <- ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
-  geom_sf(data = joined_df, aes(fill = SURV_2YR), size = 0.1)
+  geom_sf(data = joined_df, aes(fill = SURV_1YR), size = 0.05)
+ggsave("nf_surv1yr.png", nf_surv1yr, width = 12, height = 12, dpi = 300)
+dev.off()
 
+nf_surv2yr <- ggplot() +
+  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
+  geom_sf(data = joined_df, aes(fill = SURV_2YR), size = 0.05)
+ggsave("nf_surv2yr.png", nf_surv2yr, width = 12, height = 12, dpi = 300)
+dev.off()
 

@@ -39,7 +39,7 @@ forest_surv <- forest_surv %>%
          SURV_1YR = summary.fit_assess_forest..time...365..surv,
          SURV_2YR = summary.fit_assess_forest..time...730..surv)
 
-# Strip the "FOREST_ID=" string before the Forest ID and pad with a 0
+# Strip the "FOREST_ID=" string before the Forest ID and pad with 0
 forest_surv$FOREST_ID <- str_remove(forest_surv$FOREST_ID, "FOREST_ID=")
 forest_surv$FOREST_ID <- paste0("0", forest_surv$FOREST_ID)
 

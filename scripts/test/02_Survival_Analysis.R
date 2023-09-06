@@ -41,7 +41,7 @@ forest_surv <- forest_surv %>%
 
 # Strip the "FOREST_ID=" string before the Forest ID and pad with a 0
 forest_surv$FOREST_ID <- str_remove(forest_surv$FOREST_ID, "FOREST_ID=")
-forest_surv$FOREST_ID <- str_pad(forest_surv$FOREST_ID, 2, pad = "0")
+forest_surv$FOREST_ID <- paste0("0", forest_surv$FOREST_ID)
 
 ## save forest_surv as a .csv file to "data/processed/"
 write_csv(forest_surv, "data/processed/forest_surv.csv")

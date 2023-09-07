@@ -16,14 +16,15 @@ joined_df <- left_join(forest_boundary, forest_surv,
 
 
 #st_write(joined_df, "data/processed/surv_prob.shp") # I think this file will be too big for github. 
-# May have to have this script combine the data and make a map.
+# May have to have this script combine the data and make a map. 
+
 
 us_states <- states(cb = TRUE) %>%
-  filter(GEOID < "60") %>%
+  filter(GEOID < "60") 
   #filter(GEOID != "02") %>%
   #filter(GEOID != "15") 
-  shift_geometry(preserve_area = TRUE,
-                 position = "outside")
+  #shift_geometry(preserve_area = TRUE,
+  #               position = "outside")
 ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1)
 

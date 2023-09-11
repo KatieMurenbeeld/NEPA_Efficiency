@@ -8,10 +8,16 @@ library(tigris)
 
 # Load the files to combine
 forest_surv <- read_csv("data/processed/forest_surv.csv")
+region_surv <- read_csv("data/processed/region_surv.csv")
 forest_boundary <- st_read('data/original/S_USA.AdministrativeForest.shp')
 forest_boundary <- select(forest_boundary, -c(ADMINFORES, REGION, FORESTNUMB))
+region_boundary <- st_read("data/original/S_USA.AdministrativeRegion.shp")
+region_boundary <- select(region_boundary, -c(ADMINREGIO))
 
-joined_df <- left_join(forest_boundary, forest_surv,
+forest_df <- left_join(forest_boundary, forest_surv,
+                       by = c("FORESTORGC" = "FOREST_ID"))
+
+forest_df <- left_join(forest_boundary, forest_surv,
                        by = c("FORESTORGC" = "FOREST_ID"))
 
 

@@ -46,4 +46,33 @@ forest_surv$FOREST_ID <- paste0("0", forest_surv$FOREST_ID)
 ## save forest_surv as a .csv file to "data/processed/"
 write_csv(forest_surv, "data/processed/forest_surv.csv")
 
+# Repeat at Region level
+# Fit a kaplan-meier survival curve to each forest
+fit_assess_region <- survfit(Surv(ELAPSED.DAYS, EVENT) ~ REGION_ID, data = df)
+
+# Find the survival probability for each forest at time (t) duration of 1 year and 2 years 
+region_id_1yr <- data.frame(summary(fit_assess_region, time = 365)$strata)
+time_1yr <- data.frame(summary(fit_assess_region, time = 365)$time)
+surv_prob_1yr <- data.frame(summary(fit_assess_region, time = 365)$surv)
+
+region_id_2yr <- data.frame(summary(fit_assess_region, time = 730)$strata)
+time_2yr <- data.frame(summary(fit_assess_region, time = 730)$time)
+surv_prob_2yr <- data.frame(summary(fit_assess_region, time = 730)$surv)
+
+# Combine into a data frame
+
+region_surv <- data.frame(region_id_1yr, surv_prob_1yr, surv_prob_2yr) 
+
+# Rename the columns
+region_surv <- region_surv %>%
+  rename(REGION_ID = summary.fit_assess_region..time...365..strata,
+         SURV_1YR = summary.fit_assess_region..time...365..surv,
+         SURV_2YR = summary.fit_assess_region..time...730..surv)
+
+# Strip the "REGION_ID=" string before the Region ID and pad with 0
+region_surv$REGION_ID <- str_remove(region_surv$REGION_ID, "REGION_ID=")
+region_surv$REGION_ID <- paste0("0", region_surv$REGION_ID)
+
+## save forest_surv as a .csv file to "data/processed/"
+write_csv(region_surv, "data/processed/region_surv.csv")
 

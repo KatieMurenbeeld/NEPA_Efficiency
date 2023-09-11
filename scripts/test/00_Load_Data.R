@@ -23,16 +23,24 @@ lapply(gdrive_files$id, function(x) drive_download(as_id(x),
                                                                  gdrive_files[gdrive_files$id==x,]$name), 
                                                    overwrite = TRUE))
 
-## Download the administrative forest boundaries from the USFS geodata clearing house
+## Download the administrative region, forest, and district boundaries from the USFS geodata clearing house
 # Use download.file() and set the url, destination file, and method = "curl"
 # unzip() the file (same as destfile)
 
+# Region
+download.file(url = "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.AdministrativeRegion.zip",
+              destfile = "data/original/S_USA.AdministrativeRegion.zip", method = "curl")
+unzip("data/original/S_USA.AdministrativeRegion.zip", exdir = "data/original")
+
+# Forest
 download.file(url = "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.AdministrativeForest.zip",
               destfile = "data/original/S_USA.AdministrativeForest.zip", method = "curl")
 unzip("data/original/S_USA.AdministrativeForest.zip", exdir = "data/original")
 
-
-
+# District
+#download.file(url = "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.RangerDistrict.zip",
+#              destfile = "data/original/S_USA.RangerDistrict.zip", method = "curl")
+#unzip("data/original/S_USA.RangerDistrict.zip", exdir = "data/original")
 
 
 

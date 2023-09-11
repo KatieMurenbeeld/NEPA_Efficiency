@@ -17,8 +17,8 @@ region_boundary <- select(region_boundary, -c(ADMINREGIO))
 forest_df <- left_join(forest_boundary, forest_surv,
                        by = c("FORESTORGC" = "FOREST_ID"))
 
-forest_df <- left_join(forest_boundary, forest_surv,
-                       by = c("FORESTORGC" = "FOREST_ID"))
+region_df <- left_join(region_boundary, region_surv,
+                       by = c("REGION" = "REGION_ID"))
 
 
 #st_write(joined_df, "data/processed/surv_prob.shp") # I think this file will be too big for github. 
@@ -26,9 +26,9 @@ forest_df <- left_join(forest_boundary, forest_surv,
 
 
 us_states <- states(cb = TRUE) %>%
-  filter(GEOID < "60") 
-  #filter(GEOID != "02") %>%
-  #filter(GEOID != "15") 
+  filter(GEOID < "60") %>%
+  filter(GEOID != "02") %>%
+  filter(GEOID != "15") 
   #shift_geometry(preserve_area = TRUE,
   #               position = "outside")
 ggplot() +
@@ -36,15 +36,28 @@ ggplot() +
 
 nf_surv1yr <- ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
-  geom_sf(data = joined_df, aes(fill = SURV_1YR), size = 0.05) + 
+  geom_sf(data = forest_df, aes(fill = SURV_1YR), size = 0.05) + 
   scale_fill_gradient(low = "white", high = "forestgreen")
 ggsave("nf_surv1yr.png", nf_surv1yr, width = 12, height = 12, dpi = 300)
 dev.off()
 
 nf_surv2yr <- ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
-  geom_sf(data = joined_df, aes(fill = SURV_2YR), size = 0.05)+ 
+  geom_sf(data = forest_df, aes(fill = SURV_2YR), size = 0.05)+ 
   scale_fill_gradient(low = "white", high = "forestgreen")
 ggsave("nf_surv2yr.png", nf_surv2yr, width = 12, height = 12, dpi = 300)
 dev.off()
 
+reg_surv1yr <- ggplot() +
+  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
+  geom_sf(data = region_df, aes(fill = SURV_1YR), size = 0.05) + 
+  scale_fill_gradient(low = "white", high = "forestgreen")
+ggsave("reg_surv1yr.png", reg_surv1yr, width = 12, height = 12, dpi = 300)
+dev.off()
+
+reg_surv2yr <- ggplot() +
+  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
+  geom_sf(data = region_df, aes(fill = SURV_2YR), size = 0.05) + 
+  scale_fill_gradient(low = "white", high = "forestgreen")
+ggsave("reg_surv2yr.png", reg_surv2yr, width = 12, height = 12, dpi = 300)
+dev.off()

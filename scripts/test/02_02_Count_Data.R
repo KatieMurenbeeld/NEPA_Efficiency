@@ -6,22 +6,24 @@ df <- read_csv("data/processed/pals_2009.csv")
 longer1yr <- df %>%
   filter(LONGER_1YR == 1) %>%
   group_by(FOREST_ID) %>%
-  summarise(longer1 = sum(LONGER_1YR))
+  summarise(longer1_count = sum(LONGER_1YR))
 
 less1yr <- df %>%
   filter(LONGER_1YR == 0) %>%
   group_by(FOREST_ID) %>%
-  count(LONGER_1YR)
+  count(LONGER_1YR, name = "less1_count") %>%
+  select(-LONGER_1YR)
 
 longer2yr <- df %>%
   filter(LONGER_2YR == 1) %>%
   group_by(FOREST_ID) %>%
-  summarise(longer2 = sum(LONGER_2YR))
+  summarise(longer2_count = sum(LONGER_2YR))
 
 less2yr <- df %>%
   filter(LONGER_2YR == 0) %>%
   group_by(FOREST_ID) %>%
-  count(LONGER_2YR)
+  count(LONGER_2YR, name = "less2_count") %>%
+  select(-LONGER_2YR)
 
 n_proj <- df %>% count(FOREST_ID)
 

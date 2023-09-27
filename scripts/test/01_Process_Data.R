@@ -17,8 +17,8 @@ pals_df$EVENT <- ifelse(pals_df$PROJECT.STATUS == "Complete", 1, 0)
 # PALS: create two more binary columns to denote which projects exceeded 1 year or 2 years
 # Projects with NEPA assessments > 365 days = 1, <= 365 days = 0.
 # Projects with NEPA assessments > 730 days = 1, <= 730 days = 0.
-pals_df$GREATER_1YR <- ifelse(pals_df$ELAPSED.DAYS > 360, 1, 0)
-pals_df$GREATER_2YR <- ifelse(pals_df$ELAPSED.DAYS > 730, 1, 0)
+pals_df$LONGER_1YR <- ifelse(pals_df$ELAPSED.DAYS > 360, 1, 0)
+pals_df$LONGER_2YR <- ifelse(pals_df$ELAPSED.DAYS > 730, 1, 0)
 
 # PALS: replace NA with 0 for ongoing
 pals_df$ongoing[is.na(pals_df$ongoing)] <- 0

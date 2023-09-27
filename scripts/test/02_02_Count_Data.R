@@ -35,3 +35,6 @@ new_df <- left_join(reg_for, n_proj, by = "FOREST_ID") %>%
   left_join(less1yr, by = "FOREST_ID") %>%
   left_join(longer2yr, by = "FOREST_ID") %>%
   left_join(less2yr, by = "FOREST_ID")
+
+## save new_df as a .csv file to "data/processed/"
+write_csv(new_df, "data/processed/long_nepa_count.csv")

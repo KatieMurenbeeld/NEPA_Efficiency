@@ -15,10 +15,12 @@ region_boundary <- st_read("data/original/S_USA.AdministrativeRegion.shp")
 region_boundary <- select(region_boundary, -c(ADMINREGIO))
 
 forest_df <- left_join(forest_boundary, forest_surv,
-                       by = c("FORESTORGC" = "FOREST_ID"))
+                       by = c("FORESTORGC" = "FOREST_ID")) %>%
+  filter(FORESTORGC != "1004" & FORESTORGC != "1005" & FORESTORGC != "0816")
 
 region_df <- left_join(region_boundary, region_surv,
-                       by = c("REGION" = "REGION_ID"))
+                       by = c("REGION" = "REGION_ID")) %>%
+  filter(REGION != "10")
 
 
 #st_write(joined_df, "data/processed/surv_prob.shp") # I think this file will be too big for github. 

@@ -29,6 +29,9 @@ count_df <- left_join(forest_boundary, count,
                       by = c("FORESTORGC" = "FOREST_ID")) %>%
   filter(FORESTORGC != "1004" & FORESTORGC != "1005" & FORESTORGC != "0816")
 
+count_df <- count_df %>% 
+  mutate(greater_1yr_percent = longer1_count / n) %>%
+  mutate(greater_2yr_percent = longer2_count / n)
 
 
 #st_write(joined_df, "data/processed/surv_prob.shp") # I think this file will be too big for github. 
@@ -52,9 +55,15 @@ dev.off()
 
 nf_count1yr <- ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
-  geom_sf(data = count_df, aes(fill = SURV_1YR), size = 0.05) + 
+  geom_sf(data = count_df, aes(fill = greater_1yr_percent), size = 0.05) + 
   scale_fill_gradient(low = "white", high = "forestgreen")
-ggsave("nf_surv1yr.png", nf_surv1yr, width = 12, height = 12, dpi = 300)
+ggsave("nf_count1yr.png", nf_count1yr, width = 12, height = 12, dpi = 300)
+
+nf_count2yr <- ggplot() +
+  geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +
+  geom_sf(data = count_df, aes(fill = greater_2yr_percent), size = 0.05) + 
+  scale_fill_gradient(low = "white", high = "forestgreen")
+ggsave("nf_count2yr.png", nf_count2yr, width = 12, height = 12, dpi = 300)
 
 nf_surv2yr <- ggplot() +
   geom_sf(data = us_states, fill = NA, color = "black", size = 0.1) +

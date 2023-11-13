@@ -2,6 +2,7 @@
 library(tidyverse)
 library(sf)
 library(terra)
+library(tigris)
 
 # Some files are large so set the timeout to 2 minutes (120 seconds)
 options(timeout=120)
@@ -68,3 +69,6 @@ land.use <- rast("/Users/kathrynmurenbeeld/Analysis/assignment-7-combiningdata-K
 
 elect.cntx <- read_csv("data/original/election-context-2018.csv") 
 
+# Load US counties using tigris (only for states in Forest Region 1)
+
+counties <- counties(state = c("MT", "ID", "SD", "WY"))

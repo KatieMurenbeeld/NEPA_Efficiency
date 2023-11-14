@@ -2,6 +2,7 @@
 library(tidyverse)
 library(sf)
 library(terra)
+library(tigris)
 
 
 ### will also combine the election context data to county data

@@ -59,5 +59,28 @@ elect.cntx$fips <- as.character(elect.cntx$fips)
 elect.cntx.bdry <- left_join(counties, elect.cntx, 
                          by = c("GEOID" = "fips"))
 
+### Check the geometry of the joined shp
+all(st_is_valid(elect.cntx.bdry))
 
+## Set the projection for the layers
 
+fs.nf.proj <- fs.nf.valid %>% st_transform(., crs=crs(land.use))
+fs.rg.proj <- fs.rg.bdry %>% st_transform(., crs=crs(land.use))
+fws.te.proj <- fws.te.bdry %>% st_transform(., crs=crs(land.use))
+wf.sf.proj <- wf.sf %>% st_transform(., crs=crs(land.use))
+elect.cntx.proj <- elect.cntx.bdry %>% st_transform(., crs=crs(land.use))
+
+## Subset the data sets to the FS Region boundary for Region 1
+
+### Filter the Region shp
+fs.rg1.proj <- fs.rg.proj %>%
+  filter(REGION == "01")
+
+### Subset the other datasets to fs.rg1.proj
+fs.subset <- fs.nf.proj[fs.rg1.proj, ]
+fws.subset <- fws.te.proj[fs.rg1.proj]
+wf.subset <- wf.sf.proj[fs.rg1.proj]
+elect.subset <- elect.cntx.proj[fs.rg1.proj]
+
+# clipping raster to geometry?
+#landuse.subset <- land.use

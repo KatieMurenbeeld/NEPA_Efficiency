@@ -95,7 +95,9 @@ sub.map <- tm_shape(fs.rg1.proj) +
   tm_shape(elect.subset) + 
   tm_polygons(col = "gray") + 
   tm_shape(fs.subset) + 
-  tm_polygons(col = "darkgreen")
+  tm_polygons(col = "darkgreen") +
+  tm_shape(fws.subset) + 
+  tm_lines(col = "blue")
   
   
 

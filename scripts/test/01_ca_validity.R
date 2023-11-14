@@ -3,6 +3,7 @@ library(tidyverse)
 library(sf)
 library(terra)
 library(tigris)
+library(tmap)
 
 
 ### will also combine the election context data to county data
@@ -37,7 +38,7 @@ elect.cntx <- read_csv("data/original/election-context-2018.csv")
 
 # Load US counties using tigris (only for states in Forest Region 1)
 
-counties <- counties(state = c("MT", "ID", "SD", "WY"))
+counties <- counties(state = c("MT", "ID", "ND", "SD", "WY"))
 
 ## Check the geometry validity
 
@@ -86,4 +87,16 @@ elect.subset <- elect.cntx.proj[fs.rg1.proj, ]
 # clipping raster to geometry? use terra::crop() and/or mask()
 #landuse.subset <- land.use
 # use zonal for summary statistic (categorical so use mode...)
-landuse.subet <- crop(x = land.use, y = vect(fs.rg1.proj), snap = "near", mask = TRUE)
+landuse.subset <- crop(x = land.use, y = vect(fs.rg1.proj), snap = "near", mask = TRUE)
+
+# Test a quick map
+sub.map <- tm_shape(fs.rg1.proj) + 
+  tm_polygons(border.col = "darkgray", border.alpha = 0.5) +
+  tm_shape(elect.subset) + 
+  tm_polygons(col = "gray") + 
+  tm_shape(fs.subset) + 
+  tm_polygons(col = "darkgreen")
+  
+  
+
+

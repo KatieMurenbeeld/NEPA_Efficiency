@@ -78,9 +78,11 @@ fs.rg1.proj <- fs.rg.proj %>%
 
 ### Subset the other datasets to fs.rg1.proj
 fs.subset <- fs.nf.proj[fs.rg1.proj, ]
-fws.subset <- fws.te.proj[fs.rg1.proj]
-wf.subset <- wf.sf.proj[fs.rg1.proj]
-elect.subset <- elect.cntx.proj[fs.rg1.proj]
+fws.subset <- fws.te.proj[fs.rg1.proj, ]
+wf.subset <- wf.sf.proj[fs.rg1.proj, ]
+elect.subset <- elect.cntx.proj[fs.rg1.proj, ]
 
-# clipping raster to geometry?
+# clipping raster to geometry? use terra::crop() and/or mask()
 #landuse.subset <- land.use
+# use zonal for summary statistic (categorical so use mode...)
+landuse.subet <- crop(x = land.use, y = vect(fs.rg1.proj), snap = "near", mask = TRUE)

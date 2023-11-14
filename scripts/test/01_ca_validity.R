@@ -84,20 +84,11 @@ fws.subset <- fws.te.proj[fs.rg1.proj, ]
 wf.subset <- wf.sf.proj[fs.rg1.proj, ]
 elect.subset <- elect.cntx.proj[fs.rg1.proj, ]
 
-# clipping raster to geometry? use terra::crop() and/or mask()
-#landuse.subset <- land.use
-# use zonal for summary statistic (categorical so use mode...)
+### Use terra::crop() and/or mask() to clip land.use raster to FS Region 1 extent 
 landuse.subset <- crop(x = land.use, y = vect(fs.rg1.proj), snap = "near", mask = TRUE)
 
-# Test a quick map
-sub.map <- tm_shape(fs.rg1.proj) + 
-  tm_polygons(border.col = "darkgray", border.alpha = 0.5) +
-  tm_shape(elect.subset) + 
-  tm_polygons(col = "gray") + 
-  tm_shape(fs.subset) + 
-  tm_polygons(col = "darkgreen") +
-  tm_shape(elect.subset) + 
-  tm_polygons(col = "white_pct", alpha = 0.5)
+### Write the subset geometries and raster to data/processed
+
   
   
 

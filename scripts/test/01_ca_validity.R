@@ -83,6 +83,8 @@ fs.subset <- fs.nf.proj[fs.rg1.proj, ]
 fws.subset <- fws.te.proj[fs.rg1.proj, ]
 wf.subset <- wf.sf.proj[fs.rg1.proj, ]
 elect.subset <- elect.cntx.proj[fs.rg1.proj, ]
+elect.subset <- elect.subset %>% 
+  select()
 
 ### Use terra::crop() and/or mask() to clip land.use raster to FS Region 1 extent 
 landuse.subset <- crop(x = land.use, y = vect(fs.rg1.proj), snap = "near", mask = TRUE)

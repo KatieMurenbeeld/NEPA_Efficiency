@@ -7,7 +7,7 @@ library(tigris)
 # Some files are large so set the timeout to 2 minutes (120 seconds)
 options(timeout=120)
 
-## Use tempfile() and unzip() to load the US Forest Service National Forest and Regional boundaries
+## Use tempfile() and unzip() to load the US Forest Service National Forest and Regional boundaries (fs.nf, fs.rg)
 tmp <- tempfile()
 fs.nf.url <- "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.AdministrativeForest.zip"
 download.file(fs.nf.url, tmp)
@@ -22,7 +22,7 @@ tmp2 <- tempfile()
 unzip(zipfile=tmp, exdir = tmp2 )
 fs.rg.bdry <- read_sf(tmp2)
 
-## Use tempfile() and unzip() to load the Threatened and Endangered Species Critical Habitats
+## Use tempfile() and unzip() to load the Threatened and Endangered Species Critical Habitats (fws.te)
 
 tmp <- tempfile()
 fws.te.url <- "https://ecos.fws.gov/docs/crithab/crithab_all/crithab_all_layers.zip"
@@ -30,6 +30,15 @@ download.file(fws.te.url, tmp)
 tmp2 <- tempfile()
 unzip(zipfile=tmp, exdir = tmp2 )
 fws.te.bdry <- read_sf(tmp2)
+
+## Use tempfile() and unzip() to load the Climate and Economic Justice Screening Tool data (cejst)
+
+tmp <- tempfile()
+cejst.url <- "https://static-data-screeningtool.geoplatform.gov/data-versions/1.0/data/score/downloadable/1.0-shapefile-codebook.zip"
+download.file(cejst.url, tmp)
+tmp2 <- tempfile()
+unzip(zipfile = tmp, exdir = tmp2)
+cejst.bdry <- read_sf(tmp2)
 
 ## Use tempfile() and unzip() to load the Land Cover Change Index
 ## and the Land Cover data 

@@ -1,6 +1,5 @@
 library(tidyverse)
 library(terra)
-library(tidyterra)
 library(sf)
 library(readr)
 library(ggplot2)
@@ -46,8 +45,10 @@ nf_ealr_map <- ggplot() +
   geom_sf(data = fs_reg1, fill = NA, color = "black", size = 0.5)
 ggsave("nf_ealr_map.png", nf_ealr_map, width = 12, height = 12, dpi = 300)
 
-nf_landuse_map <- ggplot(landuse_subset) +
-  geom_sf(data = fs_subset_rg1, fill = NA, color = "darkgreen", size = 0.1) +
-  geom_sf(data = fs_reg1, fill = NA, color = "black", size = 0.5)
-ggsave("nf_landuse_map.png", nf_landuse_map, width = 12, height = 12, dpi = 300)
+#nf_landuse_map <- ggplot(landuse_subset) +
+#  geom_sf(data = fs_subset_rg1, fill = NA, color = "darkgreen", size = 0.1) +
+#  geom_sf(data = fs_reg1, fill = NA, color = "black", size = 0.5)
+#ggsave("nf_landuse_map.png", nf_landuse_map, width = 12, height = 12, dpi = 300)
 
+plot(landuse_subset)
+plot(st_geometry(fs_subset_rg1), add = TRUE)

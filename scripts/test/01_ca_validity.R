@@ -113,6 +113,7 @@ st_write(obj = fws.subset, dsn = "data/processed/fws_subset.shp")
 st_write(obj = wf.subset, dsn = "data/processed/wf_subset.shp")
 st_write(obj = cejst.subset, dsn = "data/processed/cejst_subset.shp")
 st_write(obj = elect.subset, dsn = "data/processed/elect_subset.shp")
+st_write(obj = fs.rg1.proj, dsn = "data/processed/fs_reg1.shp")
 writeRaster(x = landuse.subset, filename = "data/processed/landuse_subset.tif")
 
   

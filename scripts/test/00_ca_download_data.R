@@ -29,7 +29,7 @@ fws.te.url <- "https://ecos.fws.gov/docs/crithab/crithab_all/crithab_all_layers.
 download.file(fws.te.url, tmp)
 tmp2 <- tempfile()
 unzip(zipfile=tmp, exdir = tmp2 )
-fws.te.bdry <- read_sf(tmp2)
+fws.te.bdry <- read_sf(tmp2) # This warning comes up because there are two shapefiles. One for line and one for polygons.
 
 ## Use tempfile() and unzip() to load the Climate and Economic Justice Screening Tool data (cejst)
 
@@ -38,7 +38,7 @@ cejst.url <- "https://static-data-screeningtool.geoplatform.gov/data-versions/1.
 download.file(cejst.url, tmp)
 tmp2 <- tempfile()
 unzip(zipfile = tmp, exdir = tmp2)
-cejst.bdry <- read_sf(tmp2)
+#cejst.bdry <- read_sf(tmp2) # Error: Cannot open "/private/var/folders/rr/nq1j46pd355fn_0gk__qf1s40000gn/T/RtmpsH47Ws/filef2191f2cd424"; The source could be corrupt or not supported. See `st_drivers()` for a list of supported formats.
 
 ## Use tempfile() and unzip() to load the Land Cover Change Index
 ## and the Land Cover data 
@@ -78,6 +78,4 @@ land.use <- rast("/Users/kathrynmurenbeeld/Analysis/assignment-7-combiningdata-K
 
 elect.cntx <- read_csv("data/original/election-context-2018.csv") 
 
-# Load US counties using tigris (only for states in Forest Region 1)
 
-counties <- counties(state = c("MT", "ID", "SD", "WY"))

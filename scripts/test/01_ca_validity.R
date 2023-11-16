@@ -13,7 +13,8 @@ library(tmap)
 ## Forest Service and Wish and Wildlife from the .zip files in 00_ca_download_data.R
 fs.nf.bdry <- st_read("data/original/S_USA.AdministrativeForest.shp")
 fs.rg.bdry <- st_read("data/original/S_USA.AdministrativeRegion.shp")
-#fws.te.bdry <- st_read("data/original/") not sure where this goes??
+fws.te.bdry <- st_read("data/original/crithab_poly.shp")
+cejst.bdry <- st_read("data/original/usa.shp")
 
 ## Wildfire Incidents
 
@@ -45,12 +46,14 @@ counties <- counties(state = c("MT", "ID", "ND", "SD", "WY"))
 all(st_is_valid(fs.nf.bdry))
 all(st_is_valid(fs.rg.bdry))
 all(st_is_valid(fws.te.bdry))
+all(st_is_valid(cejst.bdry))
 all(st_is_valid(counties))
 
-## Only the National Forest boundaries need to be fixed
+## The National Forest and the critical habitat boundaries need to be fixed
 
 fs.nf.valid <- st_make_valid(fs.nf.bdry)
 all(st_is_valid(fs.nf.valid))
+
 
 ## Check raster alignment?
 

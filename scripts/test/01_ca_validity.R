@@ -53,6 +53,8 @@ all(st_is_valid(counties))
 
 fs.nf.valid <- st_make_valid(fs.nf.bdry)
 all(st_is_valid(fs.nf.valid))
+fws.te.valid <- st_make_valid(fws.te.bdry)
+all(st_is_valid(fws.te.valid))
 
 
 ## Check raster alignment?
@@ -74,6 +76,7 @@ fs.rg.proj <- fs.rg.bdry %>% st_transform(., crs=crs(land.use))
 fws.te.proj <- fws.te.bdry %>% st_transform(., crs=crs(land.use))
 wf.sf.proj <- wf.sf %>% st_transform(., crs=crs(land.use))
 elect.cntx.proj <- elect.cntx.bdry %>% st_transform(., crs=crs(land.use))
+cejst.proj <- cejst.bdry %>% st_transform(., crs=crs(land.use))
 
 ## Subset the data sets to the FS Region boundary for Region 1
 
@@ -85,9 +88,19 @@ fs.rg1.proj <- fs.rg.proj %>%
 fs.subset <- fs.nf.proj[fs.rg1.proj, ]
 fws.subset <- fws.te.proj[fs.rg1.proj, ]
 wf.subset <- wf.sf.proj[fs.rg1.proj, ]
+cejst.subset <- cejst.proj[fs.rg1.proj, ]
 elect.subset <- elect.cntx.proj[fs.rg1.proj, ]
-elect.subset <- elect.subset %>% 
+wf.subset <- wf.subset %>%
+  select(INCIDENT_ID, INCTYP_ABBREVIATION, 
+         FINAL_ACRES, PROJECTED_FINAL_IM_COST,
+         CAUSE, COMPLEX, TOTAL_PERSONNEL_SUM,
+         STR_DESTROYED_TOTAL)
+cejst.subset <- cejst.subset %>%
   select()
+elect.subset <- elect.subset %>% 
+  select(GEOID, NAME, 
+         trump16, clinton16,
+         rural_pct, ruralurban_cc)
 
 ### Use terra::crop() and/or mask() to clip land.use raster to FS Region 1 extent 
 landuse.subset <- crop(x = land.use, y = vect(fs.rg1.proj), snap = "near", mask = TRUE)

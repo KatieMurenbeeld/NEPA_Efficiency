@@ -96,7 +96,9 @@ wf.subset <- wf.subset %>%
          CAUSE, COMPLEX, TOTAL_PERSONNEL_SUM,
          STR_DESTROYED_TOTAL)
 cejst.subset <- cejst.subset %>%
-  select()
+  select(SF, CF,
+         EALR_PFS, EBLR_PFS,
+         EPLR_PFS)
 elect.subset <- elect.subset %>% 
   select(GEOID, NAME, 
          trump16, clinton16,
@@ -109,6 +111,7 @@ landuse.subset <- crop(x = land.use, y = vect(fs.rg1.proj), snap = "near", mask 
 st_write(obj = fs.subset, dsn = "data/processed/fs_subset.shp")
 st_write(obj = fws.subset, dsn = "data/processed/fws_subset.shp")
 st_write(obj = wf.subset, dsn = "data/processed/wf_subset.shp")
+st_write(obj = cejst.subset, dsn = "data/processed/cejst_subset.shp")
 st_write(obj = elect.subset, dsn = "data/processed/elect_subset.shp")
 writeRaster(x = landuse.subset, filename = "data/processed/landuse_subset.tif")
 

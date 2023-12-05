@@ -40,16 +40,16 @@ for(i in 1:length(dist.files)) {
   # need to update readOGR to appropriate command in sf package
   temp1 <- st_read(paste0(here::here("cong_dist_shp/"), dist.files[i])) 
   temp1 <- st_transform(temp1, prj)
-  if(length(which(gIsValid(temp1)==FALSE))==0) {
+  if(length(which(st_is_valid(temp1)==FALSE))==0) {
     print(paste("Geometry is valid for layer ",dist.files[i], sep=""))
-    st_write(as(temp1,"sf"),paste0(here::here("cong_dist_cln/"),dist.files[i]))
+    st_write(as(temp1,"sf"),paste0(here::here("data/processed/"),dist.files[i]))
   } else {  # if invalid geometries are found (e.g., Ring Self-intersection), convert to sp and then add zero-width buffer
     print("Invalid geometry found - applying zero-width buffer...")
     temp2 <- gBuffer(temp1, byid=TRUE, width=0)  # add zero-width buffer
-    if(length(which(gIsValid(temp2)==FALSE))==0) {  # check again for invalid geometries
+    if(length(which(st_is_valid(temp2)==FALSE))==0) {  # check again for invalid geometries
       print(paste("Geometry corrected for layer ", dist.files[i], sep=""))
       temp3 <- as(temp2, "sf")
-      st_write(temp3,paste0(here::here("cong_dist_cln/"),dist.files[i]))
+      st_write(temp3,paste0(here::here("data/processed/"),dist.files[i]))
     } else {
       stop(paste("Unable to correct geometry for layer ",dist.files[i],"!!!", sep=""))
     }

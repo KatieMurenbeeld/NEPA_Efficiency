@@ -39,7 +39,7 @@ options(warn=-1)  # temporarily turn off warnings
 for(i in 1:length(dist.files)) {
   # need to update readOGR to appropriate command in sf package
   temp1 <- st_read(paste0(here::here("cong_dist_shp/"), dist.files[i])) 
-  temp1 <- spTransform(temp1, prj)
+  temp1 <- st_transform(temp1, prj)
   if(length(which(gIsValid(temp1)==FALSE))==0) {
     print(paste("Geometry is valid for layer ",dist.files[i], sep=""))
     st_write(as(temp1,"sf"),paste0(here::here("cong_dist_cln/"),dist.files[i]))

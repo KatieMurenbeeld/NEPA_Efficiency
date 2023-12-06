@@ -135,8 +135,8 @@ library(tigris)
 library(raster)
 library(sf)
 library(sp)
-library(rgdal)
-library(rgeos)
+#library(rgdal) depreceated
+#library(rgeos) depreceated
 
 
 
@@ -145,7 +145,7 @@ library(rgeos)
 #setwd("D:/Data/MonumentData/LCV/Outputs/GeomClean/")
 i <- 1
 s <- 1
-proj.dist.files <- list.files(here::here("LCVshapes"),pattern=".shp", full.names = TRUE)
+proj.dist.files <- list.files(here::here("data/processed"),pattern=".*LCV.shp", full.names = TRUE)
 aea <- '+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=WGS84 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 base.shape <- st_read(proj.dist.files[1]) %>% st_transform(., crs=aea)
 

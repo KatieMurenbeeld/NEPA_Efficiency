@@ -77,7 +77,7 @@ tigris::congressional_districts(year = 2018) %>% as(., "sf") %>% st_transform(.,
   st_write(., here::here("data/processed/districts116.shp"))
 
 
-district.f.name <- list.files(here::here("data/processed/"),pattern=".shp")
+district.f.name <- list.files(here::here("data/processed/"), pattern="districts.*.shp")
 cong_num <- substr(district.f.name, start=10, stop=12)
 st_yr <- seq(from=1971, by=2, length.out=length(cong_num))
 end_yr <- st_yr + 1

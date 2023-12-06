@@ -45,7 +45,7 @@ for(i in 1:length(dist.files)) {
     st_write(as(temp1,"sf"),paste0(here::here("data/processed/"),dist.files[i]))
   } else {  # if invalid geometries are found (e.g., Ring Self-intersection), convert to sp and then add zero-width buffer
     print("Invalid geometry found - applying zero-width buffer...")
-    temp2 <- gBuffer(temp1, byid=TRUE, width=0)  # add zero-width buffer
+    temp2 <- st_buffer(temp1, byid=TRUE, dist=0)  # add zero-width buffer
     if(length(which(st_is_valid(temp2)==FALSE))==0) {  # check again for invalid geometries
       print(paste("Geometry corrected for layer ", dist.files[i], sep=""))
       temp3 <- as(temp2, "sf")
@@ -92,7 +92,7 @@ colnames(us.states) <- c("state","STATENAME")
 us.states$state <- as.character(us.states$state)
 us.states$STATENAME <- as.character(us.states$STATENAME)
 continental.states <- us.states[us.states$state != "AK" & us.states$state != "HI" & us.states$state != "DC",] #only CONUS
-house.files <- list.files(here::here("lcv_scores"), pattern="house.csv", full.names = TRUE)
+house.files <- list.files(here::here("data/original"), pattern="house.csv", full.names = TRUE)
 
 LCVHouseScore <- function(fname){
   df <- read.csv(fname, skip=6)

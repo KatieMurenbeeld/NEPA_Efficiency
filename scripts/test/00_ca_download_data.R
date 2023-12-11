@@ -14,6 +14,8 @@ download.file(fs.nf.url, tmp)
 tmp2 <- tempfile()
 unzip(zipfile=tmp, exdir = tmp2 )
 fs.nf.bdry <- read_sf(tmp2)
+# on borah write the shapefile to scratch space 
+# write_sf(fs.nf.bdry, dsn = "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/fs_nf_bdry.shp", append = FALSE)
 
 tmp <- tempfile()
 fs.rg.url <- "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.AdministrativeRegion.zip"
@@ -43,23 +45,29 @@ unzip(zipfile = tmp, exdir = tmp2)
 ## Use tempfile() and unzip() to load the Land Cover Change Index
 ## and the Land Cover data 
 
-#tmp <- tempfile()
-#nlcd.del.url <- "https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2001_2021_land_cover_change_index_l48_20230630.zip"
-#download.file(nlcd.del.url, tmp)
-#tmp2 <- tempfile()
-#unzip(zipfile=tmp, exdir = tmp2 )
+tmp <- tempfile()
+nlcd.del.url <- "https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2001_2021_land_cover_change_index_l48_20230630.zip"
+download.file(nlcd.del.url, tmp)
+tmp2 <- tempfile()
+unzip(zipfile=tmp, exdir = tmp2 )
 #nlcd.del.rast <- rast(tmp2)
 
 # Wildfire Incidents
+tmp <- tempfile()
+wf.mt.url <- "https://s3-us-west-2.amazonaws.com/fs.usda.rds/RDS-2020-0016/RDS-2020-0016_Montana.zip"
+wf.id.url <- "https://s3-us-west-2.amazonaws.com/fs.usda.rds/RDS-2020-0016/RDS-2020-0016_Idaho.zip"
+wf.nd.url <- "https://s3-us-west-2.amazonaws.com/fs.usda.rds/RDS-2020-0016/RDS-2020-0016_NorthDakota.zip"
+wf.sd.url <- "https://s3-us-west-2.amazonaws.com/fs.usda.rds/RDS-2020-0016/RDS-2020-0016_SouthDakota.zip"
+wf.wy.url <- "https://s3-us-west-2.amazonaws.com/fs.usda.rds/RDS-2020-0016/RDS-2020-0016_Wyoming.zip"
 
-wf.incidents <- read_csv(file = "/Users/kathrynmurenbeeld/Analysis/assignment-7-combiningdata-KatieMurenbeeld/data/ics209plus-wildfire/ics209-plus-wf_incidents_1999to2020.csv",
-                         col_names = TRUE, col_types = NULL,
-                         na = c("", "NA")) %>%
-  drop_na(POO_LONGITUDE, POO_LATITUDE)
+#wf.incidents <- read_csv(file = "/Users/kathrynmurenbeeld/Analysis/assignment-7-combiningdata-KatieMurenbeeld/data/ics209plus-wildfire/ics209-plus-wf_incidents_1999to2020.csv",
+#                         col_names = TRUE, col_types = NULL,
+#                         na = c("", "NA")) %>%
+#  drop_na(POO_LONGITUDE, POO_LATITUDE)
 
-wf.sf <- st_as_sf(wf.incidents,
-                  coords = c("POO_LONGITUDE", "POO_LATITUDE"),
-                  crs = 4326)
+#wf.sf <- st_as_sf(wf.incidents,
+#                  coords = c("POO_LONGITUDE", "POO_LATITUDE"),
+#                  crs = 4326)
 
 # Land Use
 

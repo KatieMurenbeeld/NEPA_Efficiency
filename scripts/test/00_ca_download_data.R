@@ -80,6 +80,10 @@ land.use <- rast("/Users/kathrynmurenbeeld/Analysis/assignment-7-combiningdata-K
 
 #tmp <- tempfile()
 #vdep.url <- "https://www.landfire.gov/bulk/downloadfile.php?FNAME=US_220_mosaic-LF2020_VDep_220_CONUS.zip&TYPE=landfire"
+download.file(vdep.url, tmp)
+tmp2 <- tempfile()
+unzip(zipfile = tmp, exdir = tmp2)
+vdep.bdry <- rast(tmp2)
 
 # Load Election Context 2018
 # This is a csv of county data and will need to be joined to county data

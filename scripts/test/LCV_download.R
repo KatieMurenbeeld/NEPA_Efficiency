@@ -99,7 +99,7 @@ LCVHouseScore <- function(fname){
   df$state <- substr(df$District, 1,2)
   df$dist <- substr(df$District, 4,5)
   df$year <- substr(colnames(df)[4],2,5)
-  NameList <- c("state","dist", "year", paste0("X",substr(fname,65,68),".Score")) #Takes only the year score, not the lifetime score of the rep
+  NameList <- c("state","dist", "year", paste0("X",substr(fname,66,69),".Score")) #Takes only the year score, not the lifetime score of the rep
   idx <- match(NameList, names(df))
   df2 <- df[,idx]
   colnames(df2)[4] <- "LCVScore"
@@ -132,7 +132,8 @@ for (y in 1:length(years)){
 # rasterize ---------------------------------------------------------------
 
 library(tigris)
-library(raster)
+#library(raster) replace with terra
+library(terra)
 library(sf)
 library(sp)
 #library(rgdal) depreceated

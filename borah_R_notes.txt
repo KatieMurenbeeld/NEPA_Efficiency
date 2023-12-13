@@ -190,9 +190,19 @@ writeRaster(x=elect.cntxt.rg1.rast, filename = paste0(orig_dir, "elect_cntxt_rg1
 writeRaster(x=fws.te.rg1.rast, filename = paste0(orig_dir, "fws_te_rg1_proj.tif"))
 writeRaster(x=lcv.2018.rg1.rast, filename = paste0(orig_dir, "lcv_2018_rg1_proj.tif"))
 
-## Check raster alignment
+## Check raster alignment??
 
 ## Stack the rasters
+test_stack <- c(lcv.2018.rg1.rast, vdep.2020.rg1, wf.haz.id.rg1)
+
+### Need to fix the extent of the wildfire tifs
+#extent      : -1612395, -42945, 2449935, 3059865  (xmin, xmax, ymin, ymax)
+### can use mosaic()
+
+rlist <- list(wf.haz.id.rg1, wf.haz.mt.rg1, wf.haz.wy.rg1, wf.haz.sd.rg1, wf.haz.nd.rg1)
+rsrc <- sprc(rlist) # create a spatraster collection
+
+wf.haz.rg1 <- mosaic(rsrc)
 
 ## Save the final raster to both bsuscratch AND bsuhome project directories
 

@@ -156,11 +156,8 @@ filter(REGION == "01")
 ### Crop nlcd to Region 1
 nlcd.2021.rg1 <- crop(nlcd.2021, fs.rg1.proj)
 ### Reproject to match vdep.2020
-nlcd.2021.rg1.proj <- project(nlcd.2021.rg1, crs(vdep.2020))
-
-
-## Check raster alignment
-
+nlcd.2021.rg1.proj <- project(nlcd.2021.rg1, crs(vdep.2020)) # save this to scratch, takes a long time to process
+writeRaster(x=nlcd.2021.rg1.proj, filename = paste0(orig_dir, "nlcd_2021_rg1_proj.tif"))
 
 ## Subset to relevant fields and geometry (extent = Region 1)
 
@@ -169,6 +166,8 @@ nlcd.2021.rg1.proj <- project(nlcd.2021.rg1, crs(vdep.2020))
 ### resolution of the rasters are all 30x30
 ### extent = Region 1
 ### everything should be in the same CRS
+
+## Check raster alignment
 
 ## Stack the rasters
 

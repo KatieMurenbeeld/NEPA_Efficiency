@@ -1,0 +1,185 @@
+## In R
+
+options(timeout=300)
+
+
+nlcd.del.url <- "https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2021_land_cover_l48_20230630.zip"
+download.file(nlcd.del.url, "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/nlcd.zip")
+unzip(zipfile = "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/nlcd.zip", exdir="/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/") 
+nlcd.del.rast <- rast("/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/nlcd_2021_land_cover_l48_20230630.img")
+writeRaster(x=nlcd.del.rast, filename = "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/nlcd_2021.tif")
+
+vdep.url <- "https://www.landfire.gov/bulk/downloadfile.php?FNAME=US_220_mosaic-LF2020_VDep_220_CONUS
+.zip&TYPE=landfire"
+download.file(vdep.url, "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/vdep.zip")
+unzip(zipfile="/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/vdep.zip", exdir="/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/")
+## will need to direct to .tif file in scratch/archetype_analysis/data/original/LF2020_VDep_220_CONUS/Tif/LC20_VDep_220.tif
+
+#Use paste)() to help speed up the coding. Think about writing a function or loop in the future
+#For example
+
+outdir = "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/"
+
+unzip(zipfile = paste0(outfir, "wf_mt.zip"), exdir = outdir)
+
+#To download files from github (for election context data)
+download.file(
+  "https://github.com/MEDSL/2018-elections-unoffical/blob/master/election-context-2018.csv?raw=TRUE",
+  "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/election-context-2018.csv",
+  mode = "wb"
+)
+
+## Still didn't work. May need to use rcurl package. something about GitHub and http vs https
+
+#example code from stackoverflow
+library(RCurl)
+x <- getURL("https://raw.githubusercontent.com/MEDSL/2018-elections-unoffical/master/election-context-2018.csv")
+y <- read.csv(text = x)
+write.csv(y, paste0(outdir,"election_context_2018.csv"))
+
+options(warn=-1)  # temporarily turn off warnings
+for(i in 1:length(dist.files)) {
+  temp1 <- st_read(paste0(outdir, "LCV/processed/", dist.files[i])) 
+  temp1 <- st_transform(temp1, prj)
+  if(length(which(st_is_valid(temp1)==FALSE))==0) {
+    print(paste("Geometry is valid for layer ",dist.files[i], sep=""))
+    st_write(as(temp1,"sf"),paste0(outdir, "LCV/processed/",dist.files[i]), append=FALSE)
+  } else {  # if invalid geometries are found (e.g., Ring Self-intersection), convert to sp and then add zero-width buffer
+    print("Invalid geometry found - applying zero-width buffer...")
+    temp2 <- st_buffer(temp1, byid=TRUE, dist=0)  # add zero-width buffer
+    if(length(which(st_is_valid(temp2)==FALSE))==0) {  # check again for invalid geometries
+      print(paste("Geometry corrected for layer ", dist.files[i], sep=""))
+      temp3 <- as(temp2, "sf")
+      st_write(temp3,paste0(outdir, "LCV/processed/",dist.files[i]), append=FALSE)
+    } else {
+      stop(paste("Unable to correct geometry for layer ",dist.files[i],"!!!", sep=""))
+    }
+    rm(temp1, temp2, temp3)
+  }
+}
+options(warn=0)  # turn warnings back on
+
+for (y in 1:length(years)){
+  yr <- years[y]
+  spatial_id <- cong_data[st_yr==yr | end_yr==yr,]
+  cd <- st_read(paste0(here::here("data/processed/"),"districts",spatial_id[,1], ".shp"), stringsAsFactors=FALSE)
+  cd$DISTRICT <- ifelse( y <= 45 & as.numeric(cd$DISTRICT) <10, paste0("0",cd$DISTRICT), cd$DISTRICT)
+  cd$stid <- paste(cd$STATENAME, cd$DISTRICT, sep="")
+  hsLCV <- dplyr::filter(LCVhse, year==yr)
+  hsLCV$dist <- ifelse(hsLCV$dist == "AL","00",hsLCV$dist)
+  hsLCV$stid <- paste(hsLCV$STATENAME, hsLCV$dist, sep="")
+  hsLCV$LCVScore <- as.numeric(hsLCV$LCVScore)
+  #hsunique <- plyr::ddply(hsLCV,"stid",plyr::numcolwise(mean, na.rm=TRUE))
+  d <- cd %>% left_join(., hsLCV) 
+  st_write(d, paste0(here::here('data/processed/'),yr,"districtLCV.shp"))
+  print(yr)
+}
+
+
+## Rasterize with terra
+f <- paste0(outdir, "elect_context_2018.shp")
+f
+[1] "/bsuscratch/katiemurenbeeld/archetype_analysis/data/original/elect_context_2018.shp"
+v <- vect(f)
+r <- rast(v)
+z <- rasterize(v, r, filename = paste0(outdir, "elect_context_2018.tif"))
+z
+class       : SpatRaster 
+dimensions  : 10, 10, 1  (nrow, ncol, nlyr)
+resolution  : 2.080656, 0.8006337  (x, y)
+extent      : -117.243, -96.43647, 40.99477, 49.00111  (xmin, xmax, ymin, ymax)
+coord. ref. : lon/lat NAD83 (EPSG:4269) 
+source      : elect_context_2018.tif 
+name        : layer 
+min value   :     1 
+max value   :     1 
+
+
+
+######## 13 Dec 2023 #############
+# testing out everything!!!
+# made a setup.R script to load all libraries, update timeout, and set the original data directory
+
+source("/bsuhome/katiemurenbeeld/setup.R")
+
+## Load shapefiles
+fs.nf.bdry <- read_sf(paste0(orig_dir, "fs_nf_bdry.shp"))
+fs.rg.bdry <- read_sf(paste0(orig_dir, "fs_rg_bdry.shp"))
+elect.cntxt.bdry <- read_sf(paste0(orig_dir, "elect_context_2018.shp"))
+fws.te.bdry <- read_sf(paste0(orig_dir, "fws_te_bdry.shp"))
+lcv.2018.bdry <- read_sf(paste0(orig_dir, "LCV/processed/2018districtLCV.shp")) #just using one year for now
+
+## Check and fix validity (could make loop, see Matt's code)
+all(st_is_valid(fs.nf.bdry))
+[1] FALSE
+fs.nf.bdry.valid <- st_make_valid(fs.nf.bdry)
+all(st_is_valid(fs.nf.bdry.valid))
+all([1] TRUE
+all(st_is_valid(fs.rg.bdry))
+[1] TRUE
+all(st_is_valid(elect.cntxt.bdry))
+[1] TRUE
+all(st_is_valid(fws.te.bdry))
+[1] TRUE
+all(st_is_valid(lcv.2018.bdry))
+[1] TRUE
+
+
+## Load rasters
+wf.haz.id <- rast(paste0(orig_dir, "ID/WHP_ID.tif"))
+wf.haz.mt <- rast(paste0(orig_dir, "MT/WHP_MT.tif"))
+wf.haz.wy <- rast(paste0(orig_dir, "WY/WHP_WY.tif"))
+wf.haz.sd <- rast(paste0(orig_dir, "SD/WHP_SD.tif"))
+wf.haz.nd <- rast(paste0(orig_dir, "ND/WHP_ND.tif"))
+nlcd.2021 <- rast(paste0(orig_dir, "nlcd_2021.tif"))
+vdep.2020 <- rast(paste0(orig_dir, "LF2020_VDep_220_CONUS/Tif/LC20_VDep_220.tif"))
+
+## Set the projection/CRS
+### First, check the CRS using st_crs() for shapefiles and crs() for rasters
+### Set to the vdep.2020 crs
+
+fs.nf.proj <- fs.nf.bdry.valid %>% st_transform(., crs=crs(vdep.2020))
+fs.rg.proj <- fs.rg.bdry %>% st_transform(., crs=crs(vdep.2020))
+elect.cntxt.proj <- elect.cntxt.bdry %>% st_transform(., crs=crs(vdep.2020))
+fws.te.proj <- fws.te.bdry %>% st_transform(., crs=crs(vdep.2020))
+lcv.2018.proj <- lcv.2018.bdry %>% st_transform(., crs=crs(vdep.2020)) 
+
+wf.haz.id.proj <- project(wf.haz.id, crs(vdep.2020)) # this takes a minute or two
+wf.haz.mt.proj <- project(wf.haz.mt, crs(vdep.2020))
+wf.haz.wy.proj <- project(wf.haz.wy, crs(vdep.2020))
+wf.haz.sd.proj <- project(wf.haz.sd, crs(vdep.2020))
+wf.haz.nd.proj <- project(wf.haz.nd, crs(vdep.2020))
+nlcd.2021.proj <- project(nlcd.2021, crs(vdep.2020)) # this takes several minutes, may want to crop this before reprojecting. For entire CONUS may need to parrallel process
+### Create Region 1 boundary
+fs.rg1.proj <- fs.rg.proj %>%
+filter(REGION == "01")
+### Crop nlcd to Region 1
+nlcd.2021.rg1 <- crop(nlcd.2021, fs.rg1.proj)
+### Reproject to match vdep.2020
+nlcd.2021.rg1.proj <- project(nlcd.2021.rg1, crs(vdep.2020))
+
+
+## Check raster alignment
+
+
+## Subset to relevant fields and geometry (extent = Region 1)
+
+
+## Rasterize shapefiles
+### resolution of the rasters are all 30x30
+### extent = Region 1
+### everything should be in the same CRS
+
+## Stack the rasters
+
+## Save the final raster to both bsuscratch AND bsuhome project directories
+
+
+
+
+
+
+
+
+
+

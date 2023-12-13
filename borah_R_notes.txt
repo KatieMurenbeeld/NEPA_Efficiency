@@ -159,8 +159,13 @@ nlcd.2021.rg1 <- crop(nlcd.2021, fs.rg1.proj)
 nlcd.2021.rg1.proj <- project(nlcd.2021.rg1, crs(vdep.2020)) # save this to scratch, takes a long time to process
 writeRaster(x=nlcd.2021.rg1.proj, filename = paste0(orig_dir, "nlcd_2021_rg1_proj.tif"))
 
-## Subset to relevant fields and geometry (extent = Region 1)
-
+## Subset to geometry (extent = Region 1)
+wf.haz.id.rg1 <- crop(wf.haz.id.proj, fs.rg1.proj)
+wf.haz.mt.rg1 <- crop(wf.haz.mt.proj, fs.rg1.proj)
+wf.haz.wy.rg1 <- crop(wf.haz.wy.proj, fs.rg1.proj)
+wf.haz.sd.rg1 <- crop(wf.haz.sd.proj, fs.rg1.proj)
+wf.haz.nd.rg1 <- crop(wf.haz.nd.proj, fs.rg1.proj)
+vdep.2020.rg1 <- crop(vdep.2020, fs.rg1.proj)
 
 ## Rasterize shapefiles
 ### resolution of the rasters are all 30x30

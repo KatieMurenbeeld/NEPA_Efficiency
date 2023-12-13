@@ -167,10 +167,23 @@ wf.haz.sd.rg1 <- crop(wf.haz.sd.proj, fs.rg1.proj)
 wf.haz.nd.rg1 <- crop(wf.haz.nd.proj, fs.rg1.proj)
 vdep.2020.rg1 <- crop(vdep.2020, fs.rg1.proj)
 
+fs.nf.rg1 <- st_crop(fs.nf.proj, fs.rg1.proj)
+elect.cntxt.rg1 <- st_crop(elect.cntxt.proj, fs.rg1.proj)
+fws.te.rg1 <- st_crop(fws.te.proj, fs.rg1.proj)
+lcv.2018.rg1 <- st_crop(lcv.2018.proj, fs.rg1.proj)
+
 ## Rasterize shapefiles
 ### resolution of the rasters are all 30x30
 ### extent = Region 1
 ### everything should be in the same CRS
+
+#### Select variables, make factor 
+elect.cntxt.rg1$rrlrbn_ <- as.factor(elect.cntxt.rg1$rrlrbn_)
+fws.te.rg1$status <- as.factor(fws.te.rg1$status)
+
+elect.cntxt.rg1.rast <- rasterize(vect(elect.cntxt.rg1), vdep.2020.rg1, field = "rrlrbn_")
+fws.te.rg1.rast <- rasterize(vect(fws.te.rg1), vdep.2020.rg1, field = "status")
+lcv.2018.rg1.rast <- rasterize(vect(lcv.2018.rg1), vdep.2020.rg1, field = "LCVScore")
 
 ## Check raster alignment
 

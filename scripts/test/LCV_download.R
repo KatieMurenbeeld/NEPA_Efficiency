@@ -114,7 +114,7 @@ y <- 46
 for (y in 1:length(years)){
   yr <- years[y]
   spatial_id <- cong_data[st_yr==yr | end_yr==yr,]
-  cd <- st_read(paste0(here::here("data/processed/"),"districts",spatial_id[,1], ".shp"), stringsAsFactors=FALSE)
+  cd <- st_read(paste0(outdir, "LCV/processed/","districts",spatial_id[,1], ".shp"), stringsAsFactors=FALSE)
   cd$DISTRICT <- ifelse( y <= 45 & as.numeric(cd$DISTRICT) <10, paste0("0",cd$DISTRICT), cd$DISTRICT)
   cd$stid <- paste(cd$STATENAME, cd$DISTRICT, sep="")
   hsLCV <- dplyr::filter(LCVhse, year==yr)
@@ -123,7 +123,7 @@ for (y in 1:length(years)){
   hsLCV$LCVScore <- as.numeric(hsLCV$LCVScore)
   #hsunique <- plyr::ddply(hsLCV,"stid",plyr::numcolwise(mean, na.rm=TRUE))
   d <- cd %>% left_join(., hsLCV) 
-  st_write(d, paste0(here::here('data/processed/'),yr,"districtLCV.shp"))
+  st_write(d, paste0(outdir, 'LCV/processed/',yr,"districtLCV.shp"))
   print(yr)
 }
 

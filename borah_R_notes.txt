@@ -207,7 +207,9 @@ wf.haz.rg1 <- mosaic(rsrc)
 writeRaster(x = wf.haz.rg1, filename = paste0(orig_dir, "wf_haz_rg1.tif"))
 
 ## Save the final raster to both bsuscratch AND bsuhome project directories
+reg1_stack <- c(fws.te.rg1.rast, lcv.2018.rg1.rast, elect.cntxt.rg1.rast, vdep.2020.rg1, nlcd.2021.rg1.proj, wf.haz.rg1)
 
+writeRaster(x = reg1_stack, filename = paste0(orig_dir, "reg1_arch_attri.tif"))
 
 
 

@@ -73,7 +73,7 @@ ggsave("nlcd_map.png", plot = nlcd_map, width = 12, height = 12, dpi = 300)
 
 vdep_map <- ggplot() +
   geom_raster(aes(x = vdep.df$x, y = vdep.df$y, fill = vdep.df$LABEL)) +
-  geom_sf(data = fs_subset.proj, fill = NA, color = "black", size = 2) +
+  geom_sf(data = fs_subset.proj, fill = NA, color = "white", size = 2) +
   scale_fill_gradient("Veg. Depart. Index", low = "white", high = "black") +
   labs(title = " Region 1: Vegetation Departure Index", x = "", y = "") +
   theme_bw() +
@@ -100,4 +100,8 @@ reg1_patch <- (nlcd_map | vdep_map) /
   (whp_map)
 
 ggsave("reg1_patch_attri.png", plot = reg1_patch)
+
+patch_test <- nlcd_map + vdep_map + rrl_map + lcv_map + whp_map
+
+ggsave("patch_test.png", plot = patch_test, width = 25, height = 10)
 

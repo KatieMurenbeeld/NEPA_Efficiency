@@ -19,7 +19,7 @@ fs_subset <- st_read("data/processed/fs_subset.shp")
 #landuse_subset <- rast("data/processed/landuse_subset.tif")
 reg1_attri <- rast("data/processed/reg1_archetype_attribute_3km.tif")
 
-## Reproject reg1_attri to WGS84
+## Reproject the forest service shapes to NAD83
 fs_subset.proj <- fs_subset %>% st_transform(., crs=crs(reg1_attri))
 fs_reg1.proj <- fs_reg1 %>% st_transform(., crs=crs(reg1_attri))
 

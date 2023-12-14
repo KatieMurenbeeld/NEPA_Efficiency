@@ -95,5 +95,9 @@ whp_map <- ggplot() +
 
 ggsave("whp_map.png", plot = whp_map, width = 12, height = 12, dpi = 300)
 
+reg1_patch <- (nlcd_map | vdep_map) /
+  (rrl_map | lcv_map) /
+  (whp_map)
 
+ggsave("reg1_patch_attri.png", plot = reg1_patch)
 

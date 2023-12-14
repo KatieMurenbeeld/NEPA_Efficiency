@@ -79,6 +79,9 @@ ggsave("exp_intert.png", ex.inert, width = 12, height = 12, dpi = 300)
 # Based on the results above, run FCM with k = 5 and m = 1.25
 FCM_result_k5 <- CMeans(dataset, k = 5, m = 1.25, standardize = TRUE)
 
+# save the result as an rds file
+write_rds(FCM_result_k5, "data/processed/fcm_result_k5.rds")
+
 ## Visually review the clusters
 
 Maps.k5 <- mapClusters(object = FCM_result_k5, undecided = 0.45)

@@ -21,6 +21,9 @@ fs_reg1.proj <- fs_reg1 %>% st_transform(., crs=crs(reg1_attri))
 fs_subset.proj <- st_intersection(fs_subset.proj, fs_reg1.proj)
 reg1_attri <- crop(x = reg1_attri, y = vect(fs_reg1.proj), snap = "near", mask = TRUE)
 
+### Save the cropped raster
+writeRaster(reg1_attri, "data/processed/reg1_attri_crop_3km.tif")
+
 ### Make maps of the region1 stacked raster 
 
 lcv.df <- reg1_attri$LCVScore %>% as.data.frame(xy = TRUE)
@@ -76,6 +79,9 @@ patch <- rrl_map + lcv_map
 
 ggsave("patch_test.png", plot = patch, width =12, height = 12, dpi = 300)
 
+patch_reg1 <- (nlcd_map | vdep_map | rrl_map) /
+  (whp_map | vdep_map)
 
+ggsave("patch_reg1.png", plot = patch_reg1, width =12, height = 12, dpi = 300)
 
 

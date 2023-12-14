@@ -25,6 +25,9 @@ reg1_attri <- crop(x = reg1_attri, y = vect(fs_reg1.proj), snap = "near", mask =
 
 lcv.df <- reg1_attri$LCVScore %>% as.data.frame(xy = TRUE)
 rrl.df <- reg1_attri$rrlrbn_ %>% as.data.frame(xy = TRUE)
+whp.df <- reg1_attri$WHP_ID %>% as.data.frame(xy = TRUE)
+nlcd.df <- reg1_attri$`NLCD Land Cover Class` %>% as.data.frame(xy = TRUE)
+vdep.df <- reg1_attri$LABEL %>% as.data.frame(xy = TRUE)
 
 lcv_map <- ggplot() +
   geom_raster(aes(x = lcv.df$x, y = lcv.df$y, fill = lcv.df$LCVScore)) +
@@ -42,10 +45,36 @@ rrl_map <- ggplot() +
 
 ggsave("rrl_test_map.png", plot = rrl_map, width = 12, height = 12, dpi = 300)
 
-## Practice using patchwork
+whp_map <- ggplot() +
+  geom_raster(aes(x = whp.df$x, y = whp.df$y, fill = whp.df$WHP_ID)) +
+  geom_sf(data = fs_subset.proj, fill = NA, color = "black", size = 0.1) +
+  theme_bw() +
+  theme()
 
-rrl_map + lcv_map
+ggsave("whp_test_map.png", plot = whp_map, width = 12, height = 12, dpi = 300)
 
+nlcd_map <- ggplot() +
+  geom_raster(aes(x = nlcd.df$x, y = nlcd.df$y, fill = nlcd.df$`NLCD Land Cover Class`)) +
+  geom_sf(data = fs_subset.proj, fill = NA, color = "black", size = 0.1) +
+  theme_bw() +
+  theme()
+
+ggsave("nlcd_test_map.png", plot = nlcd_map, width = 12, height = 12, dpi = 300)
+
+vdep_map <- ggplot() +
+  geom_raster(aes(x = vdep.df$x, y = vdep.df$y, fill = vdep.df$LABEL)) +
+  geom_sf(data = fs_subset.proj, fill = NA, color = "black", size = 0.1) +
+  theme_bw() +
+  theme()
+
+ggsave("vdep_test_map.png", plot = vdep_map, width = 12, height = 12, dpi = 300)
+
+
+## Create a patchwork figure
+
+patch <- rrl_map + lcv_map
+
+ggsave("patch_test.png", plot = patch, width =12, height = 12, dpi = 300)
 
 
 

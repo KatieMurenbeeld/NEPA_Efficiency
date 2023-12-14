@@ -7,6 +7,7 @@ library(ggmap)
 library(tigris)
 library(tmap)
 library(patchwork)
+library(viridis)
 
 # Load the data
 fs_reg1 <- st_read("data/processed/fs_reg1.shp")
@@ -43,6 +44,7 @@ ggsave("lcvscore_test_map.png", plot = lcv_map, width = 12, height = 12, dpi = 3
 rrl_map <- ggplot() +
   geom_raster(aes(x = rrl.df$x, y = rrl.df$y, fill = rrl.df$rrlrbn_)) +
   geom_sf(data = fs_subset.proj, fill = NA, color = "black", size = 0.1) +
+  scale_fill_viridis() +
   theme_bw() +
   theme()
 

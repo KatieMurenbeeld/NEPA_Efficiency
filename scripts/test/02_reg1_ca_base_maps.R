@@ -21,7 +21,7 @@ fs_reg1.proj <- fs_reg1 %>% st_transform(., crs=crs(reg1_attri))
 fs_subset.proj <- st_intersection(fs_subset.proj, fs_reg1.proj)
 reg1_attri <- crop(x = reg1_attri, y = vect(fs_reg1.proj), snap = "near", mask = TRUE)
 
-### Practice making maps and using patchwork
+### Make maps of the region1 stacked raster 
 
 lcv.df <- reg1_attri$LCVScore %>% as.data.frame(xy = TRUE)
 rrl.df <- reg1_attri$rrlrbn_ %>% as.data.frame(xy = TRUE)
@@ -40,9 +40,11 @@ rrl_map <- ggplot() +
   theme_bw() +
   theme()
 
-ggsave("lcvscore_test_map.png", plot = lcv_map, width = 12, height = 12, dpi = 300)
+ggsave("rrl_test_map.png", plot = rrl_map, width = 12, height = 12, dpi = 300)
 
+## Practice using patchwork
 
+rrl_map + lcv_map
 
 
 

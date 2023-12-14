@@ -1,9 +1,13 @@
+## some code came from https://jeremygelb.github.io/geocmeans/articles/web_vignettes/rasters.html
+
 library(tidyverse)
 library(terra)
 library(sf)
 library(ggplot2)
 library(patchwork)
 library(geocmeans)
+library(RColorBrewer)
+library(viridis)
 
 # Load the data
 fs_reg1 <- st_read("data/processed/fs_reg1.shp")
@@ -35,13 +39,51 @@ dataset <- lapply(names(reg1_attri), function(n){
 names(dataset) <- names(reg1_attri)
 
 ### Test out running a FCM with k = 3 and m = 1.5
-FCM_result <- CMeans(dataset, k = 3, m = 1.5, standardize = TRUE)
+FCM_result_k3 <- CMeans(dataset, k = 3, m = 1.5, standardize = TRUE)
 
 ## Visually review the clusters
 
-Maps.k3 <- mapClusters(object = FCM_result, undecided = 0.45)
+Maps.k3 <- mapClusters(object = FCM_result_k3, undecided = 0.45)
 
 test_fcm <- Maps.k3$ClusterPlot + theme(legend.position = "bottom") + 
   scale_fill_brewer(palette = "Set2")
 
 ggsave("test_fcm.png", plot = test_fcm, width = 12, height = 12, dpi = 300)
+
+### Code below from https://jeremygelb.github.io/geocmeans/articles/web_vignettes/rasters.html
+# finding an appropriate k and m values
+FCMvalues <- select_parameters.mc(algo = "FCM", data = dataset, 
+                                  k = 2:7, m = seq(1.1,2,0.1), spconsist = FALSE, 
+                                  indices = c("XieBeni.index", "Explained.inertia",
+                                              "Negentropy.index", "Silhouette.index"),
+                                  verbose = TRUE)
+
+# plotting the silhouette index values
+sil.idx <- ggplot(FCMvalues) + 
+  geom_raster(aes(x = m, y = k, fill = Silhouette.index)) + 
+  geom_text(aes(x = m, y = k, label = round(Silhouette.index,2)), size = 8) +
+  coord_fixed(ratio=0.125) +
+  scale_fill_viridis()
+  
+ggsave("sil_ind.png", sil.idx, width = 12, height = 12, dpi = 300)
+
+# plotting the explained inertia
+ex.inert <- ggplot(FCMvalues) + 
+  geom_raster(aes(x = m, y = k, fill = Explained.inertia)) + 
+  geom_text(aes(x = m, y = k, label = round(Explained.inertia,2)), size = 8) +
+  scale_fill_viridis() +
+  coord_fixed(ratio=0.125)
+
+ggsave("exp_intert.png", ex.inert, width = 12, height = 12, dpi = 300)
+
+# Based on the results above, run FCM with k = 5 and m = 1.25
+FCM_result_k5 <- CMeans(dataset, k = 5, m = 1.25, standardize = TRUE)
+
+## Visually review the clusters
+
+Maps.k5 <- mapClusters(object = FCM_result_k5, undecided = 0.45)
+
+fcm_k5_map <- Maps.k5$ClusterPlot + theme(legend.position = "bottom") + 
+  scale_fill_brewer(palette = "Set2")
+
+ggsave("fcm_k5_map.png", plot = fcm_k5_map, width = 12, height = 12, dpi = 300)

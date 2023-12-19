@@ -44,6 +44,7 @@ names(dataset) <- names(reg1_attri)
 FCM_result_k3 <- CMeans(dataset, k = 3, m = 1.5, standardize = TRUE)
 map.res.k3 <- rast(FCM_result_k3$rasters)
 writeRaster(map.res.k3[["Groups"]], filename = "data/processed/FCM_k3.tif")
+
 ## Visually review the clusters
 
 Maps.k3 <- mapClusters(object = FCM_result_k3, undecided = 0.45)
@@ -81,6 +82,8 @@ ggsave("exp_intert.png", ex.inert, width = 12, height = 12, dpi = 300)
 
 # Based on the results above, run FCM with k = 5 and m = 1.25
 FCM_result_k5 <- CMeans(dataset, k = 5, m = 1.25, standardize = TRUE)
+map.res.k5 <- rast(FCM_result_k5$rasters)
+writeRaster(map.res.k5[["Groups"]], filename = "data/processed/FCM_k5.tif")
 
 # save the result as an rds file
 write_rds(FCM_result_k5, "data/processed/fcm_result_k5.rds")

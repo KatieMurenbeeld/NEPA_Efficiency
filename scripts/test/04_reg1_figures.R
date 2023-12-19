@@ -136,7 +136,7 @@ vals.k3.df.2 <- vals.k3.df %>%
 
 vals.k3.df.sum <- vals.k3.df %>%
   group_by(variable) %>%
-  filter(., val > quantile(val, probs = 0.1) & val < quantile(val, probs = 0.9))
+  filter(., val > quantile(val, probs = 0.05) & val < quantile(val, probs = 0.95))
 
 ## Make the multiple-interval plot
 theme_set(theme_ggdist())
@@ -145,7 +145,7 @@ multi.int.plot <- ggplot(data = vals.k3.df.sum, aes(x = val, y = variable, color
   stat_pointinterval(position = "dodge") +
   scale_color_brewer(palette = "Set2")
                          
-ggsave("k3_multi_point_plot.png", plot = multi.int.plot, width = 12, height = 12, dpi = 300)  
+ggsave("k3_multi_point_plot.png", plot = multi.int.plot, width = 12, height = 15, dpi = 300)  
 
 ## Repeat with k=5 results
                          
@@ -170,7 +170,7 @@ vals.k5.df.2 <- vals.k5.df %>%
 
 vals.k5.df.sum <- vals.k5.df %>%
   group_by(variable) %>%
-  filter(., val > quantile(val, probs = 0.1) & val < quantile(val, probs = 0.9))
+  filter(., val > quantile(val, probs = 0.05) & val < quantile(val, probs = 0.95))
 
 ## Make the multiple-interval plot
 theme_set(theme_ggdist())

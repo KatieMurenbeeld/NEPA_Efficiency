@@ -136,3 +136,14 @@ vals.df.2 <- vals.df %>%
 vals.df.sum <- vals.df %>%
   group_by(variable) %>%
   filter(., val > quantile(val, probs = 0.1) & val < quantile(val, probs = 0.9))
+
+## Make the multiple-interval plot
+theme_set(theme_ggdist())
+
+multi.int.plot <- ggplot(data = vals.df.sum, aes(x = val, y = variable, color = as.factor(group))) +
+  stat_pointinterval()
+                         
+ggsave("test_multi_point_plot.png", plot = multi.int.plot, width = 12, height = 12, dpi = 300)                         
+                         
+                         
+                         

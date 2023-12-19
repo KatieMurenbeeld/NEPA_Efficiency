@@ -15,6 +15,7 @@ fs_reg1 <- st_read("data/processed/fs_reg1.shp")
 fs_subset <- st_read("data/processed/fs_subset.shp")
 reg1_attri <- rast("data/processed/reg1_attri_crop_3km.tif")
 map.res.k3 <- rast("data/processed/FCM_k3.tif")
+map.res.k5 <- rast("data/processed/FCM_k5.tif")
 #FCM_result_k5 <- readRDS("data/processed/fcm_result_k5.rds") ## not sure if I read this in correctly
 
 ### The following 2 little code chunks shouldn't be in this script. Need to figure out how to save the cropped NF boundaries as a .shp.
@@ -110,41 +111,74 @@ ggsave("patch_test.png", plot = patch_test, width = 25, height = 10)
 
 
 ## Create a stat_pointinterval plot
-
 names(reg1_attri) <- c("status", "lcvscore", "rural_cc", "vdep", "nlcd", "whp")
 reg1_attri <- reg1_attri[[c(2:6)]]
 
-all.vals <- c(map.res.k3[["Groups"]], reg1_attri)
 
-vals <- as.data.frame(values(all.vals, na.rm = TRUE, data.frame = TRUE)) 
+all.vals.k3 <- c(map.res.k3[["Groups"]], reg1_attri)
+
+vals.k3 <- as.data.frame(values(all.vals.k3, na.rm = TRUE, data.frame = TRUE)) 
 
 # scale the values before pivot_longer
-vals$lcvscore <- scale(vals$lcvscore)
-vals$rural_cc <- scale(vals$rural_cc)
-vals$vdep <- scale(vals$vdep)
-vals$nlcd <- scale(vals$nlcd)
-vals$whp <- scale(vals$whp)
-colnames(vals) <- c("group", "lcvscore", "rural_cc", "vdep", "nlcd", "whp")
+vals.k3$lcvscore <- scale(vals.k3$lcvscore)
+vals.k3$rural_cc <- scale(vals.k3$rural_cc)
+vals.k3$vdep <- scale(vals.k3$vdep)
+vals.k3$nlcd <- scale(vals.k3$nlcd)
+vals.k3$whp <- scale(vals.k3$whp)
+colnames(vals.k3) <- c("group", "lcvscore", "rural_cc", "vdep", "nlcd", "whp")
 
-vals.df <- as.data.frame(vals) %>%
+vals.k3.df <- as.data.frame(vals.k3) %>%
   pivot_longer(., lcvscore:whp, names_to = "variable", values_to = "val")
 
 # not sure if this part is needed?
-vals.df.2 <- vals.df %>% 
+vals.k3.df.2 <- vals.k3.df %>% 
   mutate(., cluster = str_remove(variable, " "))
 
-vals.df.sum <- vals.df %>%
+vals.k3.df.sum <- vals.k3.df %>%
   group_by(variable) %>%
   filter(., val > quantile(val, probs = 0.1) & val < quantile(val, probs = 0.9))
 
 ## Make the multiple-interval plot
 theme_set(theme_ggdist())
 
-multi.int.plot <- ggplot(data = vals.df.sum, aes(x = val, y = variable, color = as.factor(group))) +
+multi.int.plot <- ggplot(data = vals.k3.df.sum, aes(x = val, y = variable, color = as.factor(group))) +
   stat_pointinterval(position = "dodge") +
   scale_color_brewer(palette = "Set2")
                          
-ggsave("test_multi_point_plot.png", plot = multi.int.plot, width = 12, height = 12, dpi = 300)                         
+ggsave("k3_multi_point_plot.png", plot = multi.int.plot, width = 12, height = 12, dpi = 300)  
+
+## Repeat with k=5 results
                          
-                         
+all.vals.k5 <- c(map.res.k5[["Groups"]], reg1_attri)
+
+vals.k5 <- as.data.frame(values(all.vals.k5, na.rm = TRUE, data.frame = TRUE)) 
+
+# scale the values before pivot_longer
+vals.k5$lcvscore <- scale(vals.k5$lcvscore)
+vals.k5$rural_cc <- scale(vals.k5$rural_cc)
+vals.k5$vdep <- scale(vals.k5$vdep)
+vals.k5$nlcd <- scale(vals.k5$nlcd)
+vals.k5$whp <- scale(vals.k5$whp)
+colnames(vals.k5) <- c("group", "lcvscore", "rural_cc", "vdep", "nlcd", "whp")
+
+vals.k5.df <- as.data.frame(vals.k5) %>%
+  pivot_longer(., lcvscore:whp, names_to = "variable", values_to = "val")
+
+# not sure if this part is needed?
+vals.k5.df.2 <- vals.k5.df %>% 
+  mutate(., cluster = str_remove(variable, " "))
+
+vals.k5.df.sum <- vals.k5.df %>%
+  group_by(variable) %>%
+  filter(., val > quantile(val, probs = 0.1) & val < quantile(val, probs = 0.9))
+
+## Make the multiple-interval plot
+theme_set(theme_ggdist())
+
+multi.int.plot <- ggplot(data = vals.k5.df.sum, aes(x = val, y = variable, color = as.factor(group))) +
+  stat_pointinterval(position = "dodge") +
+  scale_color_brewer(palette = "Set2")
+
+ggsave("k5_multi_point_plot.png", plot = multi.int.plot, width = 12, height = 12, dpi = 300)                         
+
                          

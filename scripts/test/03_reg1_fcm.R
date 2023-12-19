@@ -38,9 +38,12 @@ dataset <- lapply(names(reg1_attri), function(n){
 
 names(dataset) <- names(reg1_attri)
 
+#writeRaster(dataset, filename = "data/processed/reg1_rst_stk.tif")
+
 ### Test out running a FCM with k = 3 and m = 1.5
 FCM_result_k3 <- CMeans(dataset, k = 3, m = 1.5, standardize = TRUE)
-
+map.res.k3 <- rast(FCM_result_k3$rasters)
+writeRaster(map.res.k3[["Groups"]], filename = "data/processed/FCM_k3.tif")
 ## Visually review the clusters
 
 Maps.k3 <- mapClusters(object = FCM_result_k3, undecided = 0.45)

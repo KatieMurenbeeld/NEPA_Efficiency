@@ -7,12 +7,15 @@ library(geocmeans)
 library(RColorBrewer)
 library(viridis)
 library(ggpattern)
+library(distributional)
+library(ggdist)
 
 # Load the data
 fs_reg1 <- st_read("data/processed/fs_reg1.shp")
 fs_subset <- st_read("data/processed/fs_subset.shp")
 reg1_attri <- rast("data/processed/reg1_attri_crop_3km.tif")
-FCM_result_k5 <- readRDS("data/processed/fcm_result_k5.rds") ## not sure if I read this in correctly
+map.res.k3 <- rast("data/processed/FCM_k3.tif")
+#FCM_result_k5 <- readRDS("data/processed/fcm_result_k5.rds") ## not sure if I read this in correctly
 
 ### The following 2 little code chunks shouldn't be in this script. Need to figure out how to save the cropped NF boundaries as a .shp.
 ## Reproject the forest service shapes to NAD83
@@ -105,3 +108,31 @@ patch_test <- nlcd_map + vdep_map + rrl_map + lcv_map + whp_map
 
 ggsave("patch_test.png", plot = patch_test, width = 25, height = 10)
 
+
+## Create a stat_pointinterval plot
+
+names(reg1_attri) <- c("status", "lcvscore", "rural_cc", "vdep", "nlcd", "whp")
+reg1_attri <- reg1_attri[[c(2:6)]]
+
+all.vals <- c(map.res.k3[["Groups"]], reg1_attri)
+
+vals <- as.data.frame(values(all.vals, na.rm = TRUE, data.frame = TRUE)) 
+
+# scale the values before pivot_longer
+vals$lcvscore <- scale(vals$lcvscore)
+vals$rural_cc <- scale(vals$rural_cc)
+vals$vdep <- scale(vals$vdep)
+vals$nlcd <- scale(vals$nlcd)
+vals$whp <- scale(vals$whp)
+colnames(vals) <- c("group", "lcvscore", "rural_cc", "vdep", "nlcd", "whp")
+
+vals.df <- as.data.frame(vals) %>%
+  pivot_longer(., lcvscore:whp, names_to = "variable", values_to = "val")
+
+# not sure if this part is needed?
+vals.df.2 <- vals.df %>% 
+  mutate(., cluster = str_remove(variable, " "))
+
+vals.df.sum <- vals.df %>%
+  group_by(variable) %>%
+  filter(., val > quantile(val, probs = 0.1) & val < quantile(val, probs = 0.9))

@@ -59,6 +59,7 @@ for(i in 1:length(dist.files)) {
 }
 options(warn=0)  # turn warnings back on
 
+# update directories
 for (y in 1:length(years)){
   yr <- years[y]
   spatial_id <- cong_data[st_yr==yr | end_yr==yr,]

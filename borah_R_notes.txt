@@ -195,7 +195,7 @@ writeRaster(x=lcv.2018.rg1.rast, filename = paste0(orig_dir, "lcv_2018_rg1_proj.
 ## Check raster alignment??
 
 ## Stack the rasters
-### could create a function or if else statement that if they can stack will need to align rasters
+### could create a function or if else statement that if they can't stack will need to align rasters
 test_stack <- c(lcv.2018.rg1.rast, vdep.2020.rg1, wf.haz.id.rg1)
 
 ### Need to fix the extent of the wildfire tifs

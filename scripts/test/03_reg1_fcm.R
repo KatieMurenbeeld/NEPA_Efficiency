@@ -14,6 +14,8 @@ fs_reg1 <- st_read("data/processed/fs_reg1.shp")
 fs_subset <- st_read("data/processed/fs_subset.shp")
 reg1_attri <- rast("data/processed/reg1_attri_crop_3km.tif")
 
+
+
 ### The following 2 little code chunks shouldn't be in this script. Need to figure out how to save the cropped NF boundaries as a .shp.
 ## Reproject the forest service shapes to NAD83
 fs_subset.proj <- fs_subset %>% st_transform(., crs=crs(reg1_attri))
@@ -29,6 +31,9 @@ names(reg1_attri) <- c("status", "lcvscore", "rural_cc", "vdep", "nlcd", "whp")
 
 ### Remove the status band since they are all NA
 reg1_attri <- reg1_attri[[c(2:6)]]
+
+## Quickly investigate the correlation between the attributes
+layerCor(reg1_attri, "pearson", na.rm = TRUE)
 
 ## Convert to a simple list of SpatRaster
 dataset <- lapply(names(reg1_attri), function(n){

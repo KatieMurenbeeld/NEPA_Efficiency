@@ -1,4 +1,4 @@
-## In R
+## In R 
 
 options(timeout=300)
 

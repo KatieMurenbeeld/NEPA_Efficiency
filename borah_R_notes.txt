@@ -219,6 +219,17 @@ reg1.stack.3km <- aggregate(reg1_stack, fact = 100, fun = mean)
 ### Then save the raster
 writeRaster(x = reg1.stack.3km, filename = paste0(orig_dir, "reg1_archetype_attribute_3km.tif"))
 
+#### 30 Jan 2024
+# I wrote a script in R that basically goes through all of this on Borah
+# Once I get to the rasterize command it fails with this error
+Traceback:
+ 1: .External(list(name = "CppMethod__invoke_notvoid", address = <pointer: 0x55555b475a50>,     dll = list(name = "Rcpp", path = "/usr/lib/R/site-library/Rcpp/libs/Rcpp.so",         dynamicLookup = TRUE, handle = <pointer: 0x555555717b40>,         info = <pointer: 0x555555bc0410>), numParameters = -1L),     <pointer: 0x55555d8c9140>, <pointer: 0x55555d714c20>, .pointer,     ...)
+ 2: y@cpp$rasterize(x@cpp, field, values, background, touches[1],     fun, FALSE, update[1], TRUE, opt)
+ 3: .local(x, y, ...)
+ 4: rasterize(vect(elect.cntxt.proj), nlcd.2021, field = "rrlrbn_")
+ 5: rasterize(vect(elect.cntxt.proj), nlcd.2021, field = "rrlrbn_")
+An irrecoverable exception occurred. R is aborting now ...
+/cm/local/apps/slurm/var/spool/job839619/slurm_script: line 12: 246043 Segmentation fault      apptainer exec -B /bsuscratch,/local katie.sif Rscript 01_fcm_process_data.R
 
 
 

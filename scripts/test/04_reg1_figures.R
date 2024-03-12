@@ -13,8 +13,8 @@ library(ggdist)
 # Load the data
 fs_nf <- st_read("data/original/S_USA.AdministrativeForest.shp")
 fs_reg <- st_read("data/original/S_USA.AdministrativeRegion.shp")
-conus_attri <- rast("data/processed/iter_006_archetype_attribute_3km.tif")
-map.conus <- rast("data/processed/fcm_conus_iter006_2024-02-27.tif")
+conus_attri <- rast("data/processed/archetype_attribute_3km_03-12-2024-11-57.tif")
+map.conus <- rast("data/processed/fcm_conus_2024-03-12.tif")
 
 ## Reproject the forest service shapes to NAD83
 fs_nf.proj <- fs_nf %>% 

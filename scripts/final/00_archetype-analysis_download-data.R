@@ -4,6 +4,7 @@ library(sf)
 library(terra)
 library(tigris)
 library(stringr)
+library(RCurl)
 
 # Some files are large so set the timeout to 10 minutes (6000 seconds)
 options(timeout=6000)
@@ -50,5 +51,14 @@ file_name <- "population_estimates_2022.csv"
 download_data(url, file_name)
 
 # Rural-Urban continuum
+url <- "https://www.ers.usda.gov/webdocs/DataFiles/53251/Ruralurbancontinuumcodes2023.csv?v=4628.7"
+file_name <- "rural_urban_cc_2023.csv"
+  
+download_data(url, file_name)
 
 # Election Context 2018
+x <- getURL("https://raw.githubusercontent.com/MEDSL/2018-elections-unoffical/master/election-context-2018.csv")
+y <- read.csv(text = x)
+write.csv(y, here::here("data/original/election_context_2018.csv"))
+
+

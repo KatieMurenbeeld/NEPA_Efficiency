@@ -25,13 +25,26 @@ download_fire <- function(st){
   return(fnames)
 }
 
+# Test with small, wet states
+st_list <- c("Connecticut", "Delaware")
+
+for (state in st_list) {
+  download_fire(state)
+}
+
 # For next time update this function to aggregate at 3km (fact = 100) and 1.5km (fact = 50)
 agg_fire <- function(ogrst){
   rasters <- rast(ogrst)
-  fnames.process <- paste0("data/processed/aggregated/",names(rasters), "_240.tif")
-  rasters.agg <- aggregate(rasters, fact=8, cores = 10)
+  fnames.process <- paste0("data/processed/aggregated/",names(rasters), "_1-5km.tif")
+  rasters.agg <- aggregate(rasters, fact=50, cores = 2)
   writeRaster(rasters.agg, fnames.process, overwrite=TRUE)
   return(fnames.process) 
+}
+
+ogrst_list <- c("data/original/WHP_CT.tif", "data/original/WHP_DE.tif")
+
+for (rst in ogrst_list) {
+  agg_fire(rst)
 }
 
 merge_all_rst <- function(prefix){

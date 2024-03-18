@@ -119,5 +119,17 @@ file_name <- ""
 
 download_data(url, file_name)
 
+# National Land Cover Data 2021
+url <- "https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2021_land_cover_l48_20230630.zip"
+file_name <- ""
+
+download_data(url, file_name)
+
+# Land Cover Change Index
+url <- "https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2001_2021_land_cover_change_index_l48_20230630.zip"
+file_name <- ""
+
+download_data(url, file_name)
+
 # Wildfire Risk
-# See script 00_archetype-analysis_download-fire.R
+# See script 00_archetype-analysis_download-prep-fire.R

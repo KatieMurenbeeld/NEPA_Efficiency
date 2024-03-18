@@ -21,7 +21,7 @@ download_data <- function(url, file_name) {
   }
 }
 
-#---Download csv data----
+#---Download csv data-----------------------------------------------------------
 
 # Partisan sorting, need to download from website
 
@@ -37,6 +37,17 @@ file_name <- "natural_amenity.csv"
 download_data(url, file_name)
 
 # League of Conservation Voters
+rt <- "http://scorecard.lcv.org/exports/"
+yr <- seq(from=2018,to=2019,by=1)
+hs <- "-house"
+fl <- "-scorecard-grid-export.csv"
+
+for(i in 1:length(yr)){
+  y <- yr[i]
+  link <- paste0(rt,y,hs,fl)
+  fname <- paste0(here::here("data/original/"),y,hs,".csv")
+  download.file(url=link, destfile=fname)
+}
 
 # Economy typology
 url <- "https://www.ers.usda.gov/webdocs/DataFiles/48652/2015CountyTypologyCodes.csv?v=7440.8"
@@ -60,5 +71,37 @@ download_data(url, file_name)
 x <- getURL("https://raw.githubusercontent.com/MEDSL/2018-elections-unoffical/master/election-context-2018.csv")
 y <- read.csv(text = x)
 write.csv(y, here::here("data/original/election_context_2018.csv"))
+
+#---Download shp data-----------------------------------------------------------
+
+# USFS National Forest Boundaries
+url <- "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.AdministrativeForest.zip"
+file_name <- ""
+
+download_data(url, file_name)
+
+# USFS Regional Boundaries
+url <- "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.AdministrativeRegion.zip"
+file_name <- ""
+
+download_data(url, file_name)
+
+# FWS Critical Habitat
+url <- "https://ecos.fws.gov/docs/crithab/crithab_all/crithab_all_shapefiles.zip"
+file_name <- ""
+
+download_data(url, file_name)
+
+# National Wilderness Areas
+url <- "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.Wilderness.zip"
+file_name = ""
+
+download_data(url, file_name)
+
+# Climate and Economic Justice Screening Tool
+url <- "https://static-data-screeningtool.geoplatform.gov/data-versions/1.0/data/score/downloadable/1.0-shapefile-codebook.zip"
+file_name <- ""
+
+download_data(url, file_name)
 
 

@@ -25,7 +25,7 @@ download_fire <- function(st){
   return(fnames)
 }
 
-
+# For next time update this function to aggregate at 3km (fact = 100) and 1.5km (fact = 50)
 agg_fire <- function(ogrst){
   rasters <- rast(ogrst)
   fnames.process <- paste0("data/processed/aggregated/",names(rasters), "_240.tif")

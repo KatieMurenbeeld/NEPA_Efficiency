@@ -87,7 +87,7 @@ file_name <- ""
 download_data(url, file_name)
 
 # FWS Critical Habitat
-url <- "https://ecos.fws.gov/docs/crithab/crithab_all/crithab_all_shapefiles.zip"
+url <- "https://ecos.fws.gov/docs/crithab/crithab_all/crithab_all_layers.zip"
 file_name <- ""
 
 download_data(url, file_name)
@@ -104,4 +104,20 @@ file_name <- ""
 
 download_data(url, file_name)
 
+# Forest Dependence 
+url <- "https://www.fs.usda.gov/rds/archive/products/RDS-2021-0077/RDS-2021-0077.zip"
+file_name <- ""
 
+download_data(url, file_name)
+
+#---Download tif data-----------------------------------------------------------
+## These may be too large to do through RStudio?
+
+# Elevation
+url <- "https://landfire.gov/bulk/downloadfile.php?FNAME=US_Topo_2020-LF2020_Elev_220_CONUS.zip&TYPE=landfire"
+file_name <- ""
+
+download_data(url, file_name)
+
+# Wildfire Risk
+# See script 00_archetype-analysis_download-fire.R

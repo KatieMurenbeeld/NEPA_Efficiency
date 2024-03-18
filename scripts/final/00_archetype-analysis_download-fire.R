@@ -8,7 +8,7 @@ library(RCurl)
 # Set the timeout to 10 minutes (6000 seconds)
 options(timeout=6000)
 
-# For this I only want the wildfire hazard potential (WHP)
+# Only want the wildfire hazard potential (WHP)
 
 download_fire <- function(st){    
   tmp <- tempfile()
@@ -18,7 +18,8 @@ download_fire <- function(st){
   unzip(zipfile=tmp, exdir = tmp2 )
   dir.name <- list.files(tmp2)
   rast.file <- list.files(paste0(tmp2,"/", dir.name), pattern="*.tif$", full.names = TRUE)
-  rasters <- rast(rast.file)
+  whp.rast.file <- rast.file[grepl("WHP", rast.file)]
+  rasters <- rast(whp.rast.file)
   fnames <- paste0("data/original/",names(rasters), ".tif")
   writeRaster(rasters, filename = fnames)
   return(fnames)

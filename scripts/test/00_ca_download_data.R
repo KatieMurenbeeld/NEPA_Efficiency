@@ -4,8 +4,8 @@ library(sf)
 library(terra)
 library(tigris)
 
-# Some files are large so set the timeout to 2 minutes (120 seconds)
-options(timeout=120)
+# Some files are large so set the timeout to 10 minutes (6000 seconds)
+options(timeout=6000)
 
 ## Use tempfile() and unzip() to load the US Forest Service National Forest and Regional boundaries (fs.nf, fs.rg)
 tmp <- tempfile()

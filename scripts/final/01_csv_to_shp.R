@@ -43,7 +43,7 @@ join_counties <- function(data_set) {
 forest.depend.bdry <- st_make_valid(forest.depend.bdry)
 
 # make list of files to make valid
-not_valid <- list()
+not_valid <- list(ec_bdry, fs_bdry, na_bdry, et_bdry, ps_bdry, ruc_bdry, dpop_bdry, lcv_bdry)
 
 for (i in not_valid) {
   st_make_valid(i)
@@ -53,6 +53,15 @@ for (i in not_valid) {
 ### I already know there are some in the election context
 #elect.cntx.bdry$ruralurban_cc[is.na(elect.cntx.bdry$ruralurban_cc)] <- 0
 print("replaced NAs")
+
+# Set the projection and a base shape
+prj <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # projection for NLCD2021
+base_shp <- fd_bdry %>% st_transform(., crs = prj)
+
+# Reproject all the shapefiles
+reproj <- function() {
+  
+}
 
 ## Write the validated and factorized shp to a new shp
 write_sf(obj = forest.depend.bdry, dsn = paste0(proc_dir, "forest_depend_to_rst.shp"), overwrite = TRUE, append = FALSE)

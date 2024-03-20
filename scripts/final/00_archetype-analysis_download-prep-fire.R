@@ -5,7 +5,7 @@ library(tigris)
 library(stringr)
 library(RCurl)
 
-# Set the timeout to 10 minutes (6000 seconds)
+# Set the timeout to 100 minutes (6000 seconds)
 options(timeout=6000)
 
 # Only want the wildfire hazard potential (WHP)

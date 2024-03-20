@@ -21,40 +21,53 @@ download_fire <- function(st){
   whp.rast.file <- rast.file[grepl("WHP", rast.file)]
   rasters <- rast(whp.rast.file)
   fnames <- paste0("data/original/",names(rasters), ".tif")
-  writeRaster(rasters, filename = fnames)
+  print(fnames)
+  writeRaster(rasters, filename = fnames, overwrite = TRUE)
   return(fnames)
 }
 
-# Test with small, wet states
-st_list <- c("Connecticut", "Delaware")
+# Create state list, excluding Alaska, DC, HI, and territories
+states <- st_drop_geometry(states())
+st_list <- states %>%
+  select(GEOID, NAME) %>%
+  mutate(GEOID = as.numeric(GEOID)) %>%
+  filter(GEOID != 2 & GEOID != 11 & GEOID != 15 & GEOID < 60) %>%
+  select(NAME)
 
 for (state in st_list) {
   download_fire(state)
+  #append(fnames_list, fnames)
 }
 
-# For next time update this function to aggregate at 3km (fact = 100) and 1.5km (fact = 50)
-agg_fire <- function(ogrst){
+fnames_list <- list.files(here::here("data/original/"), pattern = "WHP", full.names = TRUE)
+
+# For next time update this function to aggregate at 3km-3000m (fact = 100) and 1.5km-1500m (fact = 50)
+agg_fire <- function(ogrst, fac, res){
   rasters <- rast(ogrst)
-  fnames.process <- paste0("data/processed/aggregated/",names(rasters), "_1-5km.tif")
-  rasters.agg <- aggregate(rasters, fact=50, cores = 2)
+  fnames.process <- paste0("data/processed/aggregated/",names(rasters), "_", res, ".tif")
+  rasters.agg <- aggregate(rasters, fact=fac, cores = 2)
   writeRaster(rasters.agg, fnames.process, overwrite=TRUE)
   return(fnames.process) 
 }
 
-ogrst_list <- c("data/original/WHP_CT.tif", "data/original/WHP_DE.tif")
-
-for (rst in ogrst_list) {
-  agg_fire(rst)
+for (rst in fnames_list) {
+  agg_fire(rst, 50, "1500m")
 }
 
-merge_all_rst <- function(prefix){
-  file.list <- list.files(here::here("data/processed/aggregated/"), pattern = paste0("^[",prefix, "_]"), full.names = TRUE)
+prefix <- "WHP"
+res <- c("1500m", "3000m") 
+
+merge_all_rst <- function(res){
+  file.list <- list.files(here::here("data/processed/aggregated"), pattern = res, full.names = TRUE)
   rasters <- lapply(file.list, function(x) rast(x))
   rst.sprc <- sprc(rasters)
   m <- merge(rst.sprc)
   names(m) <- prefix
-  fnames.merge <- paste0(prefix, "_merge240.tif")
+  fnames.merge <- paste0(prefix, "_merge", res, ".tif")
   writeRaster(m, filename = paste0("data/processed/merged/", fnames.merge), overwrite=TRUE)
   return( paste0("data/processed/merged/", fnames.merge))
 }
 
+for (r in res) {
+  merge_all_rst(r)
+}

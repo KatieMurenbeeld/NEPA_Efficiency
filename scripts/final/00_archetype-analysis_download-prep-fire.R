@@ -51,7 +51,7 @@ agg_fire <- function(ogrst, fac, res){
 }
 
 for (rst in fnames_list) {
-  agg_fire(rst, 50, "1500m")
+  agg_fire(rst, 100, "3000m")
 }
 
 prefix <- "WHP"

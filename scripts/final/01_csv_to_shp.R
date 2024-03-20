@@ -1,10 +1,12 @@
 #source("/bsuhome/katiemurenbeeld/setup.R")
 library(stringr)
+library(sf)
+library(terra)
 
 ## Load the csv files
 elect_cntx <- read_csv(paste0(here::here("data/original/election_context_2018.csv")))
-forest_depend <- read_csv(paste0(here::here("data/original/County-Forest_Dep_Comm_Capital.csv")))
-nat_amen <- read_csv(paste0(here::here("data/original/natural_amenity.csv")))
+forest_depend <- read_csv(paste0(here::here("data/original/Data/County-Forest_Dep_Comm_Capital.csv")))
+nat_amen <- read.csv(paste0(here::here("data/original/natural_amenity.csv")), skip = 104)
 econ_typ <- read_csv(paste0(here::here("data/original/county_typology_codes_2015.csv")))
 parti_sort <- read_csv(paste0(here::here("data/original/Codebook-County-relative-exposure-aggregate-data-updated.csv")))
 rrlrbn_cc <- read_csv(paste0(here::here("data/original/rural_urban_cc_2023.csv")))

@@ -35,7 +35,13 @@ st_list <- states %>%
   filter(GEOID != 2 & GEOID != 11 & GEOID != 15 & GEOID < 60) %>%
   select(NAME)
 
-for (state in st_list) {
+for (state in st_list[1:48,]) {
+  #tmp <- tempfile()
+  #print(tmp)
+  #print(state)
+  #fs.url <- paste0("https://s3-us-west-2.amazonaws.com/fs.usda.rds/RDS-2020-0016/RDS-2020-0016_",state,".zip")
+  #print(fs.url)
+  #download.file(fs.url, tmp)
   download_fire(state)
   #append(fnames_list, fnames)
 }

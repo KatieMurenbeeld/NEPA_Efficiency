@@ -67,6 +67,13 @@ file_name <- "rural_urban_cc_2023.csv"
   
 download_data(url, file_name)
 
+# Forest dependency 
+url <- "https://www.fs.usda.gov/rds/archive/products/RDS-2021-0077/RDS-2021-0077.zip"
+file_name <- "forest_depend.zip"
+
+download_data(url, file_name)
+unzip(file_name)
+
 # Election Context 2018
 x <- getURL("https://raw.githubusercontent.com/MEDSL/2018-elections-unoffical/master/election-context-2018.csv")
 y <- read.csv(text = x)

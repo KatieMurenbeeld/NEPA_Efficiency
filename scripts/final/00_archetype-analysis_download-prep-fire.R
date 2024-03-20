@@ -30,6 +30,7 @@ download_fire <- function(st){
 states <- st_drop_geometry(states())
 st_list <- states %>%
   select(GEOID, NAME) %>%
+  mutate(NAME = gsub(" ", "", NAME)) %>%
   mutate(GEOID = as.numeric(GEOID)) %>%
   filter(GEOID != 2 & GEOID != 11 & GEOID != 15 & GEOID < 60) %>%
   select(NAME)

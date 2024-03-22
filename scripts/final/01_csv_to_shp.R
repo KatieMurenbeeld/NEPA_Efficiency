@@ -1,10 +1,8 @@
-#source("/bsuhome/katiemurenbeeld/setup.R")
 library(stringr)
 library(sf)
 library(terra)
 library(tidyverse)
 library(tigris)
-#library(plyr)
 
 ## Load the csv files
 elect_cntx <- read_csv(paste0(here::here("data/original/election_context_2018.csv")))

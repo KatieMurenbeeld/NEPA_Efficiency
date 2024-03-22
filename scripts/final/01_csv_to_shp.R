@@ -59,23 +59,26 @@ econ <- econ_typ %>%
   rename("FIPS" = "FIPStxt", "econ_type_2015" = `Economic Types Type_2015_Update non-overlapping`, 
          "econ_label" = "Economic_Type_Label")
 
-elect <- elect_cntx %>%
-  mutate("vt_pres16" = (trump16 + clinton16 + otherpres16) / total_population) %>%
-  mutate("vt_pres12" = (romney12 + obama12 + otherpres12) / total_population) %>%
-  mutate("ave_vt_pres" = (vt_pres16 + vt_pres12) / 2 ) %>%
-  mutate("ave_vt_nopres" = (((demsen16 + repsen16 + othersen16) / total_population) +
-           ((demhouse16 + rephouse16 + otherhouse16) / total_population) +
-           ((demgov14 + repgov14 + othergov14) / total_population)) / 3) %>% 
-  mutate("ave_rep" = ((trump16 / (trump16 + clinton16 + otherpres16)) + 
-           (romney12 / (romney12 + obama12 + otherpres12)) + 
-           (repsen16 / (repsen16 + demsen16 + othersen16)) + 
-           (rephouse16 / (rephouse16 + demhouse16 + otherhouse16)) +
-           (repgov14 / (repgov14 + demgov14 + othergov14))) / 5) %>%
-  mutate("ave_dem" = ((clinton16 / (trump16 + clinton16 + otherpres16)) + 
-                              (obama12 / (romney12 + obama12 + otherpres12)) + 
-                              (demsen16 / (repsen16 + demsen16 + othersen16)) + 
-                              (demhouse16 / (rephouse16 + demhouse16 + otherhouse16)) +
-                              (demgov14 / (repgov14 + demgov14 + othergov14))) / 5) %>%
+`%+%` <- function(x, y)  mapply(sum, x, y, MoreArgs = list(na.rm = TRUE))
+
+elect <- elect_cntx %>% #need to ignore NAs when calcualting things
+  mutate("vt_pres16" = (trump16 %+% clinton16 %+% otherpres16) / total_population) %>%
+  mutate("vt_pres12" = (romney12 %+% obama12 %+% otherpres12) / total_population) %>%
+  mutate("ave_vt_pres" = (vt_pres16 %+% vt_pres12) / 2 ) %>%
+  mutate("ave_vt_nopres" = (((demsen16 %+% repsen16 %+% othersen16) / total_population) %+%
+           ((demhouse16 %+% rephouse16 %+% otherhouse16) / total_population) %+%
+           ((demgov14 %+% repgov14 %+% othergov14) / total_population)) / 3) %>% 
+  mutate("ave_rep" = ((trump16 / (trump16 %+% clinton16 + otherpres16)) %+% 
+           (romney12 / (romney12 %+% obama12 %+% otherpres12)) %+% 
+           (repsen16 / (repsen16 %+% demsen16 %+% othersen16)) %+% 
+           (rephouse16 / (rephouse16 + demhouse16 %+% otherhouse16)) %+%
+           (repgov16/ (repgov16 %+% demgov16 %+% othergov16)) %+%
+           (repgov14 / (repgov14 %+% demgov14 %+% othergov14))) / 5) %>%
+  mutate("ave_dem" = ((clinton16 / (trump16 %+% clinton16 %+% otherpres16)) %+% 
+                              (obama12 / (romney12 %+% obama12 %+% otherpres12)) %+% 
+                              (demsen16 / (repsen16 %+% demsen16 %+% othersen16)) %+% 
+                              (demhouse16 / (rephouse16 %+% demhouse16 %+% otherhouse16)) %+%
+                              (demgov14 / (repgov14 %+% demgov14 %+% othergov14))) / 5) %>%
   select(fips, ave_vt_pres, ave_vt_nopres, ave_rep, ave_dem, lesscollege_pct) %>%
   rename("FIPS" = "fips")
 

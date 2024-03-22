@@ -138,5 +138,10 @@ file_name <- ""
 
 download_data(url, file_name)
 
+# GPP, NEP, RE
+url <- ""
+file_name <- ""
+
+download_data(url, filename)
 # Wildfire Risk
 # See script 00_archetype-analysis_download-prep-fire.R

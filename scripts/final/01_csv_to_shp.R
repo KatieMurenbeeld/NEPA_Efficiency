@@ -67,7 +67,8 @@ elect <- elect_cntx %>% #need to ignore NAs when calcualting things
   mutate("ave_vt_pres" = (vt_pres16 %+% vt_pres12) / 2 ) %>%
   mutate("ave_vt_nopres" = (((demsen16 %+% repsen16 %+% othersen16) / total_population) %+%
            ((demhouse16 %+% rephouse16 %+% otherhouse16) / total_population) %+%
-           ((demgov14 %+% repgov14 %+% othergov14) / total_population)) / 3) %>% 
+           ((demgov14 %+% repgov14 %+% othergov14) / total_population) %+%
+             ((demgov16 %+% repgov16 %+% othergov16) / total_population)) / 3) %>% 
   mutate("ave_rep" = ((trump16 / (trump16 %+% clinton16 + otherpres16)) %+% 
            (romney12 / (romney12 %+% obama12 %+% otherpres12)) %+% 
            (repsen16 / (repsen16 %+% demsen16 %+% othersen16)) %+% 

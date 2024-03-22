@@ -3,6 +3,7 @@ library(stringr)
 library(sf)
 library(terra)
 library(tidyverse)
+library(tigris)
 #library(plyr)
 
 ## Load the csv files
@@ -63,7 +64,7 @@ econ <- econ_typ %>%
 elect <- elect_cntx %>%
   mutate("vt_pres16" = (trump16 + clinton16 + otherpres16) / total_population) %>%
   mutate("vt_pres12" = (romney12 + obama12 + otherpres12) / total_population) %>%
-  mutate("ave_vt_pres" = (voter_turn_pres16 + voter_turn_pres12) / 2 ) %>%
+  mutate("ave_vt_pres" = (vt_pres16 + vt_pres12) / 2 ) %>%
   mutate("ave_vt_nopres" = (((demsen16 + repsen16 + othersen16) / total_population) +
            ((demhouse16 + rephouse16 + otherhouse16) / total_population) +
            ((demgov14 + repgov14 + othergov14) / total_population)) / 3) %>% 
@@ -99,7 +100,7 @@ delpop_fips <- update_fips(delpop)
 data_set <- rucc
 rucc_fips <- update_fips(rucc)
 
-all_vars <- join_all(list(elect_fips, fordep_fips, nam_fips, econ_fips, delpop_fips, rucc_fips),
+all_vars <- plyr::join_all(list(elect_fips, fordep_fips, nam_fips, econ_fips, delpop_fips, rucc_fips),
                      by='FIPS', 
                      type='left')
 
@@ -111,12 +112,6 @@ var_bdry <- left_join(all_vars, counties,
 var_bdry <- st_as_sf(var_bdry)
 
 # Join to congressional districts...only needed for LCV score
-# join_cong <- function(data_set) {
-#data_set$district
-#bdry <- left_join(cong_dist, data_set,
-#by = c("", "district"))
-#return(bdry)
-#}
 
 ## Check and fix validity
 all(st_is_valid(var_bdry))

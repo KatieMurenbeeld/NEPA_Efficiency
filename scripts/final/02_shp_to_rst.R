@@ -44,3 +44,14 @@ crithab_rast <- rasterize(vect(crithab_proj), ref_rast, field = "listing_st")
 wild_rast <- rasterize(vect(wild_proj), ref_rast, field = "BOUNDARYST")
 
 
+#---Check alignment and extents-----
+rast_stack <- c(rruc_rast, vtpres_rast, vtnopres_rast, econ15_rast,
+                percent_demvt_rast, percent_repvt_rast, percent_forpay_rast,
+                fordep_rast, lesscoll_rast, nam_rast, delpop_rast, crithab_rast, 
+                wild_rast, ref_rast)
+
+writeRaster(x = rast_stack, filename = paste0(here::here("data/processed/"), "arch_attri_", Sys.Date(), ".tif"))
+
+
+
+

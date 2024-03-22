@@ -50,8 +50,12 @@ rast_stack <- c(rruc_rast, vtpres_rast, vtnopres_rast, econ15_rast,
                 fordep_rast, lesscoll_rast, nam_rast, delpop_rast, crithab_rast, 
                 wild_rast, ref_rast)
 
-writeRaster(x = rast_stack, filename = paste0(here::here("data/processed/"), "arch_attri_", Sys.Date(), ".tif"))
+writeRaster(x = rast_stack, filename = paste0(here::here("data/processed/"), "arch_attri_", Sys.Date(), ".tif"), overwrite = TRUE)
 
+#---Check on the plots----
+plot(rast_stack$av_vt_p)
+plot(rast_stack$av_vt_n)
+plot(rast_stack)
 
-
-
+rast_stack$av_vt_n <- clamp(rast_stack$av_vt_n, upper=1.0, value=FALSE)
+plot(rast_stack$av_vt_n)

@@ -2,6 +2,8 @@
 library(stringr)
 library(sf)
 library(terra)
+library(tidyverse)
+#library(plyr)
 
 ## Load the csv files
 elect_cntx <- read_csv(paste0(here::here("data/original/election_context_2018.csv")))
@@ -14,23 +16,99 @@ del_pop <- read_csv(paste0(here::here("data/original/population_estimates_2022.c
 lcv_score <- read_csv(paste0(here::here("data/original/2019-house.csv")))
 
 ## Load county boundaries from tigris
-states <- tigris::states()
-counties <- tigris::counties(c("AL", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"))
 counties <- tigris::counties()
-#counties <- counties %>%
-#  filter out states you don't want'
+##Get Continental US list
+us.abbr <- unique(fips_codes$state)[1:51]
+us.name <- unique(fips_codes$state_name)[1:51]
+us.fips <- unique(fips_codes$state_code)[1:51]
 
-cong_dist <- tigris::congressional_districts()
+us.states <- as.data.frame(cbind(us.abbr, us.name, us.fips))
+colnames(us.states) <- c("state", "STATENAME", "FIPS")
+us.states$state <- as.character(us.states$state)
+us.states$STATENAME <- as.character(us.states$STATENAME)
+continental.states <- us.states[us.states$state != "AK" & us.states$state != "HI" & us.states$state != "DC",] #only CONUS
+
+counties <- tigris::counties()
+counties <- counties %>%
+  filter(STATEFP %in% us.states$FIPS) %>%
+  select(GEOID, geometry)
+
+#cong_dist <- tigris::congressional_districts()
+
+# Create one large table with FIPS codes and desired variables
+
+rucc <- rrlrbn_cc %>%
+  filter(Attribute == "RUCC_2023") %>%
+  select(FIPS, Value) %>%
+  rename("RUCC_2023" = "Value")
+
+delpop <- del_pop %>%
+  filter(Attribute == "R_NET_MIG_2021") %>%
+  select(FIPStxt, Value) %>%
+  rename("FIPS" = "FIPStxt", "R_NET_MIG_2021" = "Value")
+
+nam <- nat_amen %>%
+  select(FIPS.Code, X1.Low..7.High) %>%
+  rename("FIPS" = "FIPS.Code", "NAT_AMEN_SCORE_1999" = "X1.Low..7.High")
+
+fordep <- forest_depend %>%
+  select(fips, forest.area, pct.pay, pct.forest, forest.dependent) %>%
+  rename("FIPS" = "fips")
+
+econ <- econ_typ %>%
+  select(FIPStxt, `Economic Types Type_2015_Update non-overlapping`, Economic_Type_Label) %>%
+  rename("FIPS" = "FIPStxt", "econ_type_2015" = `Economic Types Type_2015_Update non-overlapping`, 
+         "econ_label" = "Economic_Type_Label")
+
+elect <- elect_cntx %>%
+  mutate("vt_pres16" = (trump16 + clinton16 + otherpres16) / total_population) %>%
+  mutate("vt_pres12" = (romney12 + obama12 + otherpres12) / total_population) %>%
+  mutate("ave_vt_pres" = (voter_turn_pres16 + voter_turn_pres12) / 2 ) %>%
+  mutate("ave_vt_nopres" = (((demsen16 + repsen16 + othersen16) / total_population) +
+           ((demhouse16 + rephouse16 + otherhouse16) / total_population) +
+           ((demgov14 + repgov14 + othergov14) / total_population)) / 3) %>% 
+  mutate("ave_rep" = ((trump16 / (trump16 + clinton16 + otherpres16)) + 
+           (romney12 / (romney12 + obama12 + otherpres12)) + 
+           (repsen16 / (repsen16 + demsen16 + othersen16)) + 
+           (rephouse16 / (rephouse16 + demhouse16 + otherhouse16)) +
+           (repgov14 / (repgov14 + demgov14 + othergov14))) / 5) %>%
+  mutate("ave_dem" = ((clinton16 / (trump16 + clinton16 + otherpres16)) + 
+                              (obama12 / (romney12 + obama12 + otherpres12)) + 
+                              (demsen16 / (repsen16 + demsen16 + othersen16)) + 
+                              (demhouse16 / (rephouse16 + demhouse16 + otherhouse16)) +
+                              (demgov14 / (repgov14 + demgov14 + othergov14))) / 5) %>%
+  select(fips, ave_vt_pres, ave_vt_nopres, ave_rep, ave_dem, lesscollege_pct) %>%
+  rename("FIPS" = "fips")
+
+update_fips <- function(date_set) {
+  data_set$FIPS <- as.character(data_set$FIPS)
+  data_set$FIPS <- str_pad(data_set$FIPS, 5, side="left", pad="0")
+  return(data_set)
+}
+
+data_set <- elect
+elect_fips <- update_fips(elect)
+data_set <- fordep
+fordep_fips <- update_fips(fordep)
+data_set <- nam
+nam_fips <- update_fips(nam)
+data_set <- econ
+econ_fips <- update_fips(econ)
+data_set <- delpop
+delpop_fips <- update_fips(delpop)
+data_set <- rucc
+rucc_fips <- update_fips(rucc)
+
+all_vars <- join_all(list(elect_fips, fordep_fips, nam_fips, econ_fips, delpop_fips, rucc_fips),
+                     by='FIPS', 
+                     type='left')
 
 # Join to counties
 
-join_counties <- function(data_set) {
-  data_set$fips <- as.character(data_set$fips)
-  data_set$fips <- str_pad(elect.cntx$fips, 5, side="left", pad="0")
-  bdry <- left_join(counties, data_set,
-                    by = c("GEOID" = "fips"))
-  return(bdry)
-}
+var_bdry <- left_join(all_vars, counties,
+                    by = c("FIPS" = "GEOID"))
+
+var_bdry <- st_as_sf(var_bdry)
 
 # Join to congressional districts...only needed for LCV score
 # join_cong <- function(data_set) {
@@ -41,30 +119,19 @@ join_counties <- function(data_set) {
 #}
 
 ## Check and fix validity
-#elect.cntx.bdry <- st_make_valid(elect.cntx.bdry)
-forest.depend.bdry <- st_make_valid(forest.depend.bdry)
+all(st_is_valid(var_bdry))
 
-# make list of files to make valid
-not_valid <- list(ec_bdry, fs_bdry, na_bdry, et_bdry, ps_bdry, ruc_bdry, dpop_bdry, lcv_bdry)
-
-for (i in not_valid) {
-  st_make_valid(i)
-}
-
-## Check for NA in desired variables
-### I already know there are some in the election context
-#elect.cntx.bdry$ruralurban_cc[is.na(elect.cntx.bdry$ruralurban_cc)] <- 0
-print("replaced NAs")
+## Check for empty geometries and invalid or corrupt geometries 
+any(st_is_empty(var_bdry))
+any(is.na(st_is_valid(var_bdry)))
+any(na.omit(st_is_valid(var_bdry)) == FALSE)
+st_is_longlat(var_bdry)
 
 # Set the projection and a base shape
-prj <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # projection for NLCD2021
-base_shp <- fd_bdry %>% st_transform(., crs = prj)
+#prj <- "+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs" # projection for NLCD2021
+#base_shp <- var_bdry %>% st_transform(., crs = prj)
 
-# Reproject all the shapefiles
-reproj <- function() {
-  
-}
 
 ## Write the validated and factorized shp to a new shp
-write_sf(obj = forest.depend.bdry, dsn = paste0(proc_dir, "forest_depend_to_rst.shp"), overwrite = TRUE, append = FALSE)
-print("new shapefiles written")
+write_sf(obj = var_bdry, dsn = paste0(here::here("data/processed/"), "all_vars_to_rst.shp"), overwrite = TRUE, append = FALSE)
+print("new shapefile written")

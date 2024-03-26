@@ -62,10 +62,13 @@ status_rast <- rasterize(vect(mill_proj), ref_rast, field = "Status")
 #writeRaster(tot_wood_rast, here::here("data/processed/tot_wood_cap.tif"), overwrite = TRUE)
 #writeRaster(status_rast, here::here("data/processed/mill_status.tif"), overwrite = TRUE)
 
+test_rast <- points_to_raster(mill_proj, nrow = 966, ncol = 1539, by = "Total_Wood", to.Raster = TRUE)
 
+r <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', background = 0, fun=min)
+r2 <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', fun=length(x))
+r3 <- rasterizeWin(vect(mill_proj), ref_rast, 'Total_Wood', win = "circle", fun = "max", pars = 30000)
+plot(r)
+plot(r3)
 
-
-
-
-
-
+d2 <- terra::distance(ref_rast, vect(mill_proj)) 
+plot(d2)

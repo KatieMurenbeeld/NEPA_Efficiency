@@ -103,14 +103,14 @@ weighted_neighbors = nb2listw(neighbors, zero.policy=T)
 # Perform the local G analysis (Getis-Ord GI*)
 
 getisgrid_casted$HOTSPOT <- as.vector(localG(getisgrid_casted$sum, weighted_neighbors))
-breaks = c(-50, -1.96, -1, 1, 1.96, 50)
-palette=c("#0000FF80", "#8080FF80", "#FFFFFF80", "#FF808080", "#FF000080")
-col = palette[cut(getisgrid_casted$HOTSPOT, breaks)]
+#breaks = c(-50, -1.96, -1, 1, 1.96, 50)
+#palette=c("#0000FF80", "#8080FF80", "#FFFFFF80", "#FF808080", "#FF000080")
+#col = palette[cut(getisgrid_casted$HOTSPOT, breaks)]
 
-plot(getisgrid_casted, col = col)
+#plot(getisgrid_casted, col = col)
 
-plot(counties$geometry)
+hotspot <- rasterize(vect(getisgrid_casted), ref_rast, field = "HOTSPOT")
 
-
-
+plot(hotspot, xlim=c(-2300000, -1400000), ylim=c(2500000, 3150000))
+plot(counties_proj$geometry, border = "grey", add = TRUE)
 

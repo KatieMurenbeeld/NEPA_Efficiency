@@ -81,6 +81,8 @@ plot(test_heat)
 plot(ref_rast)
 
 d2 <- distance(ref_rast, vect(mill_proj)) 
+names(d2) <- "distance_m"
+writeRaster(d2, here::here("data/processed/dist_to_mill.tif"), overwrite = TRUE)
 plot(d2)
 
 # From https://michaelminn.net/tutorials/r-point-analysis/
@@ -110,7 +112,10 @@ getisgrid_casted$HOTSPOT <- as.vector(localG(getisgrid_casted$sum, weighted_neig
 #plot(getisgrid_casted, col = col)
 
 hotspot <- rasterize(vect(getisgrid_casted), ref_rast, field = "HOTSPOT")
+writeRaster(hotspot, here::here("data/processed/test_hotspot.tif"), overwrite = TRUE)
 
 plot(hotspot, xlim=c(-2300000, -1400000), ylim=c(2500000, 3150000))
 plot(counties_proj$geometry, border = "grey", add = TRUE)
 
+plot(d2, xlim=c(-2500000, -1000000), ylim=c(1800000, 3150000))
+plot(counties_proj$geometry, border = "grey", add = TRUE)

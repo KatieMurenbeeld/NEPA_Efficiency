@@ -98,7 +98,7 @@ plot(kr)
 
 
 # Test out running a FCM with k = 3 and m = 1.5
-FCM_result <- CMeans(dataset, k = 3, m = 1.2, standardize = FALSE)
+FCM_result <- CMeans(dataset, k = 5, m = 1.3, standardize = FALSE)
 map.res <- rast(FCM_result$rasters)
 #writeRaster(map.res.k3[["Groups"]], filename = "data/processed/FCM_k3.tif")
 

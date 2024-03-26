@@ -53,31 +53,38 @@ st_crs(counties)
 identical(st_crs(conus_mills), st_crs(counties))
 
 #mill_county <- left_join()
+counties$mill_count <- lengths(st_intersects(counties, conus_mills))
 
 # 3. Rasterize the data
 
 ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
-
 mill_proj <- conus_mills %>% st_transform(., crs = crs(ref_rast))
+counties_proj <- counties %>% st_transform(., crs = crs(ref_rast))
 
 # Rasterize shapefiles with variables of interest
-tot_wood_rast <- rasterize(vect(mill_proj), ref_rast, field = "Total_Wood")
+
+mill_proj$PRESENT <- 1
+mill_pres_rast <- rasterize(vect(mill_proj), ref_rast, field = "PRESENT", fun = "mean")
+tot_wood_rast <- rasterize(vect(mill_proj), ref_rast, field = "Total_Wood", fun = "sum")
 status_rast <- rasterize(vect(mill_proj), ref_rast, field = "Status")
+mill_ct_rast <- rasterize(vect(counties_proj), ref_rast, field = "pt_count", fun = "sum")
 
 # 3.5 Write rasters
 
 #writeRaster(tot_wood_rast, here::here("data/processed/tot_wood_cap.tif"), overwrite = TRUE)
 #writeRaster(status_rast, here::here("data/processed/mill_status.tif"), overwrite = TRUE)
+#writeRaster(mill_ct_rast, here::here("data/processed/mill_count.tif"), overwrite = TRUE)
+#writeRaster(mill_pres_rast, here::here("data/processed/mill_present.tif"), overwrite = TRUE)
 
 test_rast <- points_to_raster(mill_proj, nrow = 966, ncol = 1539, by = "Total_Wood", to.Raster = TRUE)
 
 r <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', fun = "sum")
-r2 <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', fun=length(x))
+r2 <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', fun = "length('Total_Wood')")
 r3 <- rasterizeWin(vect(mill_proj), ref_rast, 'Total_Wood', win = "circle", fun = "max", pars = 30000)
 plot(r)
 plot(r3)
 
-fw <- focalMat(r, 3000, "circle") #The equivalent Terra function is focalMat
+fw <- focalMat(r, 3000, "circle") 
 fw[fw > 0] <- 1 
 
 test_heat <- focal(r, fw, fun = mean, na.rm=T)
@@ -91,6 +98,30 @@ plot(d2)
 
 
 
+# From https://michaelminn.net/tutorials/r-point-analysis/
+
+mill_proj$PRESENT <- 1
+getisraster <- rasterize(vect(mill_proj), ref_rast, field = 'PRESENT', fun = "sum")
+getisgrid <- as.polygons(getisraster)
+getisgrid2 <- raster::rasterToPolygons(getisraster)
+
+# Create the list of neighbors
+
+library(spdep)
+neighbors = poly2nb(getisgrid)
+weighted_neighbors = nb2listw(neighbors, zero.policy=T)
+
+geog.nearnb <- knn2nb(knearneigh(mill_proj, k = 1), sym=TRUE); #estimate distance to first neareset neighbor
+nb.nearest <- dnearneigh(mill_proj, 0,  max( unlist(nbdists(geog.nearnb, mill_proj))))
+weighted_neighbors <- nb2listw(nb.nearest, zero.policy=T)
+
+# Perform the local G analysis (Getis-Ord GI*)
+
+getisgrid$HOTSPOT <- as.vector(localG(getisgrid$sum, weighted_neighbors))
+
+
+
+plot(counties$geometry)
 
 
 

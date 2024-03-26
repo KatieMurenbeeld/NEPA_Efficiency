@@ -22,6 +22,9 @@ library(units)
 mill_sf <- read_sf(here::here("data/original/2024_Q1_Forisk_North_American_Ind_Cap_DB_Shape/Forisk_NA_FI_Capacity_DB_2024_Q1.shp"))
 
 
+
+
+
 ##Get Continental US list
 us.abbr <- unique(fips_codes$state)[1:51]
 us.name <- unique(fips_codes$state_name)[1:51]
@@ -38,6 +41,10 @@ conus_mills <- mill_sf %>%
   filter(Region != "Canada West") %>%
   filter(Region != "Canada East") %>%
   filter(State_Prov %in% continental.states$state)
+
+# What is the distribution of total wood capacity?
+
+hist(conus_mills$Total_Wood, main = "Distribution of Total Wood Capacity", xlab = "Total Wood Capacity", ylab = "Frequency")
 
 # 2. Align the data
 st_crs(conus_mills)
@@ -64,11 +71,27 @@ status_rast <- rasterize(vect(mill_proj), ref_rast, field = "Status")
 
 test_rast <- points_to_raster(mill_proj, nrow = 966, ncol = 1539, by = "Total_Wood", to.Raster = TRUE)
 
-r <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', background = 0, fun=min)
+r <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', fun = "sum")
 r2 <- rasterize(vect(mill_proj), ref_rast, 'Total_Wood', fun=length(x))
 r3 <- rasterizeWin(vect(mill_proj), ref_rast, 'Total_Wood', win = "circle", fun = "max", pars = 30000)
 plot(r)
 plot(r3)
 
-d2 <- terra::distance(ref_rast, vect(mill_proj)) 
+fw <- focalMat(r, 3000, "circle") #The equivalent Terra function is focalMat
+fw[fw > 0] <- 1 
+
+test_heat <- focal(r, fw, fun = mean, na.rm=T)
+plot(test_heat)
+plot(ref_rast)
+
+d2 <- distance(ref_rast, vect(mill_proj)) 
 plot(d2)
+
+
+
+
+
+
+
+
+

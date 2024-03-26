@@ -96,18 +96,18 @@ getisgrid_casted <- st_as_sf(getisgrid, "POLYGON")
 neighbors = poly2nb(getisgrid_casted)
 weighted_neighbors = nb2listw(neighbors, zero.policy=T)
 
-geog.nearnb <- knn2nb(knearneigh(mill_proj, k = 1), sym=TRUE); #estimate distance to first neareset neighbor
-nb.nearest <- dnearneigh(mill_proj, 0,  max( unlist(nbdists(geog.nearnb, mill_proj))))
-weighted_neighbors <- nb2listw(nb.nearest, zero.policy=T)
+#geog.nearnb <- knn2nb(knearneigh(mill_proj, k = 1), sym=TRUE); #estimate distance to first neareset neighbor
+#nb.nearest <- dnearneigh(mill_proj, 0,  max( unlist(nbdists(geog.nearnb, mill_proj))))
+#weighted_neighbors <- nb2listw(nb.nearest, zero.policy=T)
 
 # Perform the local G analysis (Getis-Ord GI*)
 
-getisgrid_casted$HOTSPOT <- as.vector(localG(mill_proj$Total_Wood, weighted_neighbors))
-breaks = c(-20, -1.96, -1, 1, 1.96, 20)
+getisgrid_casted$HOTSPOT <- as.vector(localG(getisgrid_casted$sum, weighted_neighbors))
+breaks = c(-50, -1.96, -1, 1, 1.96, 50)
 palette=c("#0000FF80", "#8080FF80", "#FFFFFF80", "#FF808080", "#FF000080")
-col = palette[cut(getisgrid$HOTSPOT, breaks)]
+col = palette[cut(getisgrid_casted$HOTSPOT, breaks)]
 
-plot(getisgrid, col = col)
+plot(getisgrid_casted, col = col)
 
 plot(counties$geometry)
 

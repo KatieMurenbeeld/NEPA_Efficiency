@@ -37,7 +37,8 @@ counties <- tigris::counties(state = continental.states$state, cb = TRUE)
 conus_mills <- mill_sf %>%
   filter(Region != "Canada West") %>%
   filter(Region != "Canada East") %>%
-  filter(State_Prov %in% continental.states$state)
+  filter(State_Prov %in% continental.states$state) %>%
+  filter(Status == "Open")
 
 # What is the distribution of total wood capacity?
 
@@ -58,6 +59,38 @@ ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
 mill_proj <- conus_mills %>% st_transform(., crs = crs(ref_rast))
 counties_proj <- counties %>% st_transform(., crs = crs(ref_rast))
 
+mills <- ref_rast
+XMIN <- ext(mills)$xmin
+XMAX <- ext(mills)$xmax
+YMIN <- ext(mills)$ymin
+YMAX <- ext(mills)$ymax
+aspectRatio <- (YMAX-YMIN)/(XMAX-XMIN)
+cellSize <- 3000
+NCOLS <- as.integer((XMAX-XMIN)/cellSize)
+NROWS <- as.integer(NCOLS * aspectRatio)
+templateRas <- rast(ncol=NCOLS, nrow=NROWS, 
+                    xmin=XMIN, xmax=XMAX, ymin=YMIN, ymax=YMAX,
+                    vals=1, crs=crs(mills))
+
+mlls <- rasterize(vect(mill_proj),templateRas)
+#ext(mlls) <- ext(ref_rast)
+mldist <- terra::distance(mlls)
+plot(mldist)
+points(mlls)
+
+mldist_crop <- crop(mldist, ref_rast, mask = TRUE)
+plot(mldist_crop)
+
+# Classify the distances
+distclasses <-matrix(c(1,100000,1, 
+                       100000,250000,2, 
+                       250000,500000,3,
+                       500000, 1000000,4), 
+                     ncol=3, 
+                     byrow=TRUE)
+distclass <- terra::classify(mldist_crop, rcl = distclasses, include.lowest = TRUE)
+plot(distclass)
+
 # Rasterize shapefiles with variables of interest
 
 mill_proj$PRESENT <- 1
@@ -72,18 +105,20 @@ mill_ct_rast <- rasterize(vect(counties_proj), ref_rast, field = "mill_count", f
 #writeRaster(status_rast, here::here("data/processed/mill_status.tif"), overwrite = TRUE)
 #writeRaster(mill_ct_rast, here::here("data/processed/mill_count.tif"), overwrite = TRUE)
 #writeRaster(mill_pres_rast, here::here("data/processed/mill_present.tif"), overwrite = TRUE)
+writeRaster(mldist_crop, here::here("data/processed/mill_dist_open.tif"), overwrite = TRUE)
 
-fw <- focalMat(tot_wood_rast, 3000, "circle") 
+fw <- focalMat(tot_wood_rast, 100000, "circle") 
 fw[fw > 0] <- 1 
 
 test_heat <- focal(tot_wood_rast, fw, fun = mean, na.rm=T)
 plot(test_heat)
 plot(ref_rast)
 
-d2 <- distance(ref_rast, vect(mill_proj)) 
-names(d2) <- "distance_m"
-writeRaster(d2, here::here("data/processed/dist_to_mill.tif"), overwrite = TRUE)
-plot(d2)
+
+mill_dist <- distance(ref_rast, vect(mill_proj)) 
+names(mill_dist) <- "distance_m"
+#writeRaster(mill_dist), here::here("data/processed/dist_to_mill.tif"), overwrite = TRUE)
+plot(mill_dist)
 
 # From https://michaelminn.net/tutorials/r-point-analysis/
 

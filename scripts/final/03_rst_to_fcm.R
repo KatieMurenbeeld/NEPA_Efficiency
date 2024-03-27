@@ -12,11 +12,11 @@ library(viridis)
 #---Load the data-----
 ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
 arch_attri <- rast(here::here("data/processed/arch_attri_2024-03-22.tif"))
-mill_dist <- rast(here::here("data/processed/dist_to_mill.tif"))
+mill_dist <- rast(here::here("data/processed/mill_dist_open.tif"))
 mill_cap_hot <- rast(here::here("data/processed/test_hotspot.tif"))
 
 # Check alignment 
-rast_stack <- c(arch_attri, mill_dist, mill_cap_hot)
+rast_stack <- c(arch_attri, mill_dist)
 
 
 # ignore for now, file corrupted?
@@ -31,7 +31,8 @@ rast_stack <- c(arch_attri, mill_dist, mill_cap_hot)
 names(rast_stack)
 
 # Select Variables for FCmeans
-rst_fcm <- rast_stack[[c("RUCC_20", "pct_pay", "lsscll_", "NAT_AME", "R_NET_M", "WHP", "distance_m")]]
+rst_fcm <- rast_stack[[c("RUCC_20", "av_vt_n", "pct_pay", "R_NET_M", "WHP", "last")]]
+#writeRaster(rst_fcm, paste0("data/processed/rast_fcm_02_", Sys.Date(), ".tif"), overwrite = TRUE)
 
 # Scale the data
 rst_fcm_sc <- scale(rst_fcm)
@@ -97,10 +98,10 @@ kr[j] <- kmn$cluster
 plot(kr)
 
 
-# Test out running a FCM with k = 3 and m = 1.5
-FCM_result <- CMeans(dataset, k = 5, m = 1.3, standardize = FALSE)
+# Test out running a FCM 
+FCM_result <- CMeans(dataset, k = 5, m = 1.2, standardize = FALSE)
 map.res <- rast(FCM_result$rasters)
-#writeRaster(map.res.k3[["Groups"]], filename = "data/processed/FCM_k3.tif")
+#writeRaster(map.res[["Groups"]], filename = paste0("data/processed/FCM_02", Sys.Date(), ".tif"))
 
 ## Visually review the clusters
 

@@ -105,7 +105,7 @@ mill_ct_rast <- rasterize(vect(counties_proj), ref_rast, field = "mill_count", f
 #writeRaster(status_rast, here::here("data/processed/mill_status.tif"), overwrite = TRUE)
 #writeRaster(mill_ct_rast, here::here("data/processed/mill_count.tif"), overwrite = TRUE)
 #writeRaster(mill_pres_rast, here::here("data/processed/mill_present.tif"), overwrite = TRUE)
-writeRaster(mldist_crop, here::here("data/processed/mill_dist_open.tif"), overwrite = TRUE)
+#writeRaster(mldist_crop, here::here("data/processed/mill_dist_open.tif"), overwrite = TRUE)
 
 fw <- focalMat(tot_wood_rast, 100000, "circle") 
 fw[fw > 0] <- 1 

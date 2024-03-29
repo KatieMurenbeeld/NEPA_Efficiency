@@ -112,9 +112,10 @@ rast_stack <- c(rruc_rast, vtpres_rast, vtnopres_rast, econ15_rast,
                 percent_demvt_rast, percent_repvt_rast, percent_forpay_rast,
                 fordep_rast, lesscoll_rast, nam_rast, delpop_rast, ref_rast, 
                 criti_dist_crop, wild_dist_crop, rruc_layers_rast,
-                econ15_layers_rast, nam_layer_rast)
+                econ15_layers_rast, nam_layer_rast, lif_rast, lmi_rast,
+                tf_rast, td_rast, ealr_rast, pm25_rast)
 
-writeRaster(x = rast_stack, filename = paste0(here::here("data/processed/"), "arch_attri_03_", Sys.Date(), ".tif"), overwrite = TRUE)
+writeRaster(x = rast_stack, filename = paste0(here::here("data/processed/"), "arch_attri_04_", Sys.Date(), ".tif"), overwrite = TRUE)
 
 #---Check on the plots----
-plot(rast_stack)
+plot(rast_stack[[37:42]])

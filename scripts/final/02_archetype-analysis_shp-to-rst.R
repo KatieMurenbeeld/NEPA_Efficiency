@@ -15,6 +15,9 @@ wild <- st_read(here::here("data/original/S_USA.Wilderness.shp"))
 # Critical habitat
 crithab <- st_read(here::here("data/original/crithab_poly.shp"))
 
+# CEJST (Climate and Economic Justice Screening Tool)
+cejst <- st_read(here::here("data/original/usa/usa.shp"))
+
 #---Load reference raster----
 ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
 crs(ref_rast)
@@ -25,9 +28,10 @@ st_crs(all_vars)
 all_vars_proj <- all_vars %>% st_transform(., crs = crs(ref_rast))
 wild_proj <- wild %>% st_transform(., crs = crs(ref_rast))
 crithab_proj <- crithab %>% st_transform(., crs = crs(ref_rast))
+cejst_proj <- cejst %>% st_transform(., crs = crs(ref_rast))
 
 #---Calculate distances from wilderness areas and critical habitat
-mill_proj <- conus_mills %>% st_transform(., crs = crs(ref_rast))
+#mill_proj <- conus_mills %>% st_transform(., crs = crs(ref_rast))
 counties_proj <- counties %>% st_transform(., crs = crs(ref_rast))
 
 XMIN <- ext(ref_rast)$xmin
@@ -72,6 +76,12 @@ fordep_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "frst_dp")
 lesscoll_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "lsscll_")
 nam_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "NAT_AME")
 delpop_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "R_NET_M")
+lif_rast <- rasterize(vect(cejst_proj), ref_rast, field = "LIF_PFS")
+lmi_rast <- rasterize(vect(cejst_proj), ref_rast, field = "LMI_PFS") 
+tf_rast <- rasterize(vect(cejst_proj), ref_rast, field = "TF_PFS") 
+td_rast <- rasterize(vect(cejst_proj), ref_rast, field = "TD_PFS")
+ealr_rast <- rasterize(vect(cejst_proj), ref_rast, field = "EALR_PFS") 
+pm25_rast <- rasterize(vect(cejst_proj), ref_rast, field = "PM25F_PFS")
 
 crithab_rast <- rasterize(vect(crithab_proj), ref_rast, field = "listing_st")
 
@@ -93,7 +103,7 @@ names(econ15_layers_rast)
 names(econ15_layers_rast) <- c("nonspecialized", "farming", "mining", 
                                "manufacturing", "fed_state_gov", "recreation")
 names(nam_layer_rast)
-names(nam_layer_rast) <- c("remove", "low_nam", "low_neu_nam", "neu_low_nam", "nuetral_nam", "neu_high_nam", "high_neu_nam", "high_nam")
+names(nam_layer_rast) <- c("remove", "low_nam", "low_neu_nam", "neu_low_nam", "neutral_nam", "neu_high_nam", "high_neu_nam", "high_nam")
 nam_layer_rast <- nam_layer_rast[[2:8]]
 
 

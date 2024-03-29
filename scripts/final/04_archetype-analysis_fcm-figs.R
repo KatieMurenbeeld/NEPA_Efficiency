@@ -139,7 +139,7 @@ fcm.hist <- ggplot(data= vals.df.sum2, mapping=aes(
   linewidth = 1, color=as.factor(group), alpha=0.5
 )) +  
   geom_interval(show.legend = FALSE) +
-  scale_color_locuszoom() + 
+  scale_color_brewer(palette = "Set2") + 
   scale_alpha_manual(values=c(1,0.7, 0.4), aesthetic="interval_alpha") +
   scale_y_continuous()+
   scale_x_discrete()+
@@ -149,3 +149,10 @@ fcm.hist <- ggplot(data= vals.df.sum2, mapping=aes(
   theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), aspect.ratio = 0.5)+
   facet_wrap(vars(group), scales="free_y", ncol=1, strip.position = "left")
 fcm.hist
+
+ggsave(here::here("figures/fcm_04_attri_hist.png"), fcm.hist,
+       width = 15, height = 20, dpi = 300)
+
+
+
+

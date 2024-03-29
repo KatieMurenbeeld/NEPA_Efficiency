@@ -13,8 +13,8 @@ library(ggdist)
 # Load the data
 fs_nf <- st_read("data/original/S_USA.AdministrativeForest.shp")
 fs_reg <- st_read("data/original/S_USA.AdministrativeRegion.shp")
-conus_attri <- rast("data/processed/rast_fcm_02_2024-03-27.tif")
-map.conus <- rast("data/processed/FCM_022024-03-27.tif")
+conus_attri <- rast("data/processed/rast_fcm_03_2024-03-29.tif")
+map.conus <- rast("data/processed/FCM_03_2024-03-29.tif")
 
 ## Reproject the forest service shapes to NAD83
 fs_nf.proj <- fs_nf %>% 
@@ -36,7 +36,7 @@ fcm_nf_map <- ggplot() +
   geom_raster(aes(x = group.df$x, y = group.df$y, fill = as.factor(group.df$Groups))) +
   geom_sf(data = fs_nf.proj, fill = NA, color = "black", size = 2) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "Fuzzy Cluster Map: k=6, m=1.37") +
+  labs(title = "Fuzzy Cluster Map: k=4, m=1.5") +
   theme(legend.position = "bottom")
 
 fcm_nf_map
@@ -48,11 +48,11 @@ fcm_reg_map <- ggplot() +
   geom_raster(aes(x = group.df$x, y = group.df$y, fill = as.factor(group.df$Groups))) +
   geom_sf(data = fs_reg.crop, fill = NA, color = "black", size = 150) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "Fuzzy Cluster Map: k=5, m=1.2") +
+  labs(title = "Fuzzy Cluster Map: k=4, m=1.5") +
   theme(legend.position = "bottom")
 
 fcm_reg_map
-ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_reg_map_02_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
+#ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_reg_map_02_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
 
 ## Create maps of the attributes
 rrl.df <- conus_attri$RUCC_20 %>% as.data.frame(xy = TRUE)
@@ -88,12 +88,12 @@ all.vals <- c(map.conus[["Groups"]], conus_attri)
 vals <- as.data.frame(values(all.vals, na.rm = TRUE, data.frame = TRUE)) 
 
 # scale the values before pivot_longer
-vals$RUCC_20 <- scale(vals$RUCC_20)
-vals$pct_pay <- scale(vals$pct_pay)
-vals$av_vt_n <- scale(vals$av_vt_n)
-vals$R_NET_M <- scale(vals$R_NET_M)
-vals$WHP <- scale(vals$WHP)
+vals$distance_to_crithab_m <- scale(vals$distance_to_crithab_m)
+vals$distance_to_wilderness_m <- scale(vals$distance_to_wilderness_m)
 vals$last <- scale(vals$last)
+vals$WHP <- scale(vals$WHP)
+vals$recreation <- scale(vals$recreation)
+#vals$last <- scale(vals$last)
 #vals$ealr_pfs <- scale(vals$ealr_pfs)
 colnames(vals) <- c("group", "RUCC_20", "av_vt_n", "pct_pay", "R_NET_M", "WHP", "last")
 

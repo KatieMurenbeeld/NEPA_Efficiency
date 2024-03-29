@@ -14,6 +14,7 @@ rrlrbn_cc <- read_csv(paste0(here::here("data/original/rural_urban_cc_2023.csv")
 del_pop <- read_csv(paste0(here::here("data/original/population_estimates_2022.csv")))
 lcv_score <- read_csv(paste0(here::here("data/original/2019-house.csv")))
 
+
 ## Load county boundaries from tigris
 counties <- tigris::counties()
 ##Get Continental US list

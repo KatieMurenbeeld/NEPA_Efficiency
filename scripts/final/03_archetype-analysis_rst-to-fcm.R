@@ -11,19 +11,25 @@ library(viridis)
 
 #---Load the data-----
 ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
-arch_attri <- rast(here::here("data/processed/arch_attri_2024-03-22.tif"))
+arch_attri <- rast(here::here("data/processed/arch_attri_03_2024-03-27.tif"))
 mill_dist <- rast(here::here("data/processed/mill_dist_open.tif"))
 mill_cap_hot <- rast(here::here("data/processed/test_hotspot.tif"))
-
-# Check alignment 
-rast_stack <- c(arch_attri, mill_dist)
-
-
+agc_flux <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_carbon_flux_ED_GEDI_ICESat2.tif")
+agc_stock <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_carbon_stock_ED_GEDI.tif")
 # ignore for now, file corrupted?
 #gpp_rast <- rast(here::here("data/original/CarbonFlux_2000_2013/Average_GPP_2000_2013.img"))
 
-#---Update categorical data?----
+#---Process the original rasters----
+# Resample then crop
+agc_stock_proj <- project(agc_stock, 
+                          y = "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs")
 
+agc_stock_crop <- crop(agc_stock_proj, ref_rast, mask = TRUE)
+
+
+
+# Check alignment 
+rast_stack <- c(arch_attri, mill_dist)
 
 #---Process raster for use with geocmeans----
 

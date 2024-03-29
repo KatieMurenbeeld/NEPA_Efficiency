@@ -9,12 +9,13 @@ library(viridis)
 library(ggpattern)
 library(distributional)
 library(ggdist)
+library(ggsci)
 
 # Load the data
 fs_nf <- st_read("data/original/S_USA.AdministrativeForest.shp")
 fs_reg <- st_read("data/original/S_USA.AdministrativeRegion.shp")
-conus_attri <- rast("data/processed/rast_fcm_03_2024-03-29.tif")
-map.conus <- rast("data/processed/FCM_03_2024-03-29.tif")
+conus_attri <- rast("data/processed/rast_fcm_04_2024-03-29.tif")
+map.conus <- rast("data/processed/FCM_04_2024-03-29.tif")
 
 ## Reproject the forest service shapes to NAD83
 fs_nf.proj <- fs_nf %>% 
@@ -36,7 +37,7 @@ fcm_nf_map <- ggplot() +
   geom_raster(aes(x = group.df$x, y = group.df$y, fill = as.factor(group.df$Groups))) +
   geom_sf(data = fs_nf.proj, fill = NA, color = "black", size = 2) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "Fuzzy Cluster Map: k=4, m=1.5") +
+  labs(title = "Fuzzy Cluster Map: k=6, m=1.25") +
   theme(legend.position = "bottom")
 
 fcm_nf_map
@@ -48,11 +49,11 @@ fcm_reg_map <- ggplot() +
   geom_raster(aes(x = group.df$x, y = group.df$y, fill = as.factor(group.df$Groups))) +
   geom_sf(data = fs_reg.crop, fill = NA, color = "black", size = 150) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "Fuzzy Cluster Map: k=4, m=1.5") +
+  labs(title = "Fuzzy Cluster Map: k=6, m=1.25") +
   theme(legend.position = "bottom")
 
 fcm_reg_map
-#ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_reg_map_02_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
+#ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_04_reg_map_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
 
 ## Create maps of the attributes
 rrl.df <- conus_attri$RUCC_20 %>% as.data.frame(xy = TRUE)
@@ -93,12 +94,18 @@ vals$distance_to_wilderness_m <- scale(vals$distance_to_wilderness_m)
 vals$last <- scale(vals$last)
 vals$WHP <- scale(vals$WHP)
 vals$recreation <- scale(vals$recreation)
-#vals$last <- scale(vals$last)
-#vals$ealr_pfs <- scale(vals$ealr_pfs)
-colnames(vals) <- c("group", "RUCC_20", "av_vt_n", "pct_pay", "R_NET_M", "WHP", "last")
+vals$LIF_PFS <- scale(vals$LIF_PFS)
+vals$LMI_PFS <- scale(vals$LMI_PFS)
+vals$EALR_PFS <- scale(vals$EALR_PFS)
+vals$av_vt_n <- scale(vals$av_vt_n)
+vals$pct_pay <- scale(vals$pct_pay)
+
+colnames(vals) <- c("group", "dist_crit", "dist_wild", "dist_mill", "WHP",
+                    "recreation", "lang_iso", "low_med_income", "earl", 
+                    "av_vt_n", "pct_forest_pay")
 
 vals.df <- as.data.frame(vals) %>%
-  pivot_longer(., RUCC_20:last, names_to = "variable", values_to = "val")
+  pivot_longer(., dist_crit:pct_forest_pay, names_to = "variable", values_to = "val")
 
 # not sure if this part is needed?
 vals.df.2 <- vals.df %>% 
@@ -116,4 +123,29 @@ multi.int.plot <- ggplot(data = vals.df.sum, aes(x = val, y = variable, color = 
   scale_color_brewer(palette = "Set2") 
 multi.int.plot
 
-#ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/conus_multi_point_plot_02_", Sys.Date(), ".png"), plot = multi.int.plot, width = 12, height = 15, dpi = 300)  
+ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_04_multi_point_plot_", Sys.Date(), ".png"), plot = multi.int.plot, width = 12, height = 15, dpi = 300)  
+
+## Make a different plot to look at distribution of attribute values in clusters
+vals.df.sum2 <- vals.df %>% 
+  group_by(variable, group) %>% 
+  median_qi(.width = c(.5, .8, .95))
+
+fcm.hist <- ggplot(data= vals.df.sum2, mapping=aes(
+  x = fct_rev(variable), y = val, 
+  ymin = .lower, ymax = .upper,
+  # size = -.width means smaller probability interval => thicker line
+  # this can be omitted, geom_pointinterval includes it automatically
+  # if a .width column is in the input data.
+  linewidth = 1, color=as.factor(group), alpha=0.5
+)) +  
+  geom_interval(show.legend = FALSE) +
+  scale_color_locuszoom() + 
+  scale_alpha_manual(values=c(1,0.7, 0.4), aesthetic="interval_alpha") +
+  scale_y_continuous()+
+  scale_x_discrete()+
+  ylab("Standardized Value") +
+  xlab("Variable") +
+  theme_bw(base_size = 16) +
+  theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), aspect.ratio = 0.5)+
+  facet_wrap(vars(group), scales="free_y", ncol=1, strip.position = "left")
+fcm.hist

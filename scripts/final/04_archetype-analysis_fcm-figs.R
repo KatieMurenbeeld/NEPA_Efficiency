@@ -14,8 +14,8 @@ library(ggsci)
 # Load the data
 fs_nf <- st_read("data/original/S_USA.AdministrativeForest.shp")
 fs_reg <- st_read("data/original/S_USA.AdministrativeRegion.shp")
-conus_attri <- rast("data/processed/rast_fcm_04_2024-03-29.tif")
-map.conus <- rast("data/processed/FCM_04_2024-03-29.tif")
+conus_attri <- rast("data/processed/rast_fcm_05_2024-03-29.tif")
+map.conus <- rast("data/processed/FCM_05_2024-03-29.tif")
 
 ## Reproject the forest service shapes to NAD83
 fs_nf.proj <- fs_nf %>% 
@@ -49,11 +49,11 @@ fcm_reg_map <- ggplot() +
   geom_raster(aes(x = group.df$x, y = group.df$y, fill = as.factor(group.df$Groups))) +
   geom_sf(data = fs_reg.crop, fill = NA, color = "black", size = 150) +
   scale_fill_brewer(palette = "Set2") +
-  labs(title = "Fuzzy Cluster Map: k=6, m=1.25") +
+  labs(title = "Fuzzy Cluster Map: k=5, m=2.25") +
   theme(legend.position = "bottom")
 
 fcm_reg_map
-#ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_04_reg_map_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
+ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_05_reg_map_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
 
 ## Create maps of the attributes
 rrl.df <- conus_attri$RUCC_20 %>% as.data.frame(xy = TRUE)
@@ -92,17 +92,15 @@ vals <- as.data.frame(values(all.vals, na.rm = TRUE, data.frame = TRUE))
 vals$distance_to_crithab_m <- scale(vals$distance_to_crithab_m)
 vals$distance_to_wilderness_m <- scale(vals$distance_to_wilderness_m)
 vals$last <- scale(vals$last)
-vals$WHP <- scale(vals$WHP)
-vals$recreation <- scale(vals$recreation)
+vals$low_nam <- scale(vals$low_nam)
+vals$high_nam <- scale(vals$high_nam)
 vals$LIF_PFS <- scale(vals$LIF_PFS)
 vals$LMI_PFS <- scale(vals$LMI_PFS)
-vals$EALR_PFS <- scale(vals$EALR_PFS)
 vals$av_vt_n <- scale(vals$av_vt_n)
 vals$pct_pay <- scale(vals$pct_pay)
 
-colnames(vals) <- c("group", "dist_crit", "dist_wild", "dist_mill", "WHP",
-                    "recreation", "lang_iso", "low_med_income", "earl", 
-                    "av_vt_n", "pct_forest_pay")
+colnames(vals) <- c("group", "dist_crit", "dist_wild", "dist_mill", "low_nam",
+                    "high_nam", "lang_iso", "low_med_income", "av_vt_n", "pct_forest_pay")
 
 vals.df <- as.data.frame(vals) %>%
   pivot_longer(., dist_crit:pct_forest_pay, names_to = "variable", values_to = "val")
@@ -123,7 +121,7 @@ multi.int.plot <- ggplot(data = vals.df.sum, aes(x = val, y = variable, color = 
   scale_color_brewer(palette = "Set2") 
 multi.int.plot
 
-ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_04_multi_point_plot_", Sys.Date(), ".png"), plot = multi.int.plot, width = 12, height = 15, dpi = 300)  
+ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_05_multi_point_plot_", Sys.Date(), ".png"), plot = multi.int.plot, width = 12, height = 15, dpi = 300)  
 
 ## Make a different plot to look at distribution of attribute values in clusters
 vals.df.sum2 <- vals.df %>% 
@@ -150,7 +148,7 @@ fcm.hist <- ggplot(data= vals.df.sum2, mapping=aes(
   facet_wrap(vars(group), scales="free_y", ncol=1, strip.position = "left")
 fcm.hist
 
-ggsave(here::here("figures/fcm_04_attri_hist.png"), fcm.hist,
+ggsave(here::here("figures/fcm_05_attri_hist.png"), fcm.hist,
        width = 15, height = 20, dpi = 300)
 
 

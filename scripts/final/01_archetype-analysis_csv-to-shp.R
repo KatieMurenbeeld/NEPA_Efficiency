@@ -13,7 +13,7 @@ parti_sort <- read_csv(paste0(here::here("data/original/Codebook-County-relative
 rrlrbn_cc <- read_csv(paste0(here::here("data/original/rural_urban_cc_2023.csv")))
 del_pop <- read_csv(paste0(here::here("data/original/population_estimates_2022.csv")))
 lcv_score <- read_csv(paste0(here::here("data/original/2019-house.csv")))
-
+econ_bea <- read.csv(paste0(here::here("data/original/CAINC6N__ALL_AREAS_2001_2022.csv")))
 
 ## Load county boundaries from tigris
 counties <- tigris::counties()
@@ -62,7 +62,7 @@ econ <- econ_typ %>%
 
 `%+%` <- function(x, y)  mapply(sum, x, y, MoreArgs = list(na.rm = TRUE))
 
-elect <- elect_cntx %>% #need to ignore NAs when calcualting things
+elect <- elect_cntx %>% #need to ignore NAs when calculating things
   mutate("vt_pres16" = (trump16 %+% clinton16 %+% otherpres16) / total_population) %>%
   mutate("vt_pres12" = (romney12 %+% obama12 %+% otherpres12) / total_population) %>%
   mutate("ave_vt_pres" = (vt_pres16 %+% vt_pres12) / 2 ) %>%
@@ -83,6 +83,33 @@ elect <- elect_cntx %>% #need to ignore NAs when calcualting things
                               (demgov14 / (repgov14 %+% demgov14 %+% othergov14))) / 5) %>%
   select(fips, ave_vt_pres, ave_vt_nopres, ave_rep, ave_dem, lesscollege_pct) %>%
   rename("FIPS" = "fips")
+
+econ_bea$Description <- trimws(econ_bea$Description)
+econ_bea$X2022 <- as.numeric(econ_bea$X2022)
+linecodes <- as.character(c(1, 9, 81, 100, 200, 300, 400, 500, 600, 700, 800, 807, 900, 1000,
+               1100, 1200, 1300, 1500, 1600, 1700, 1800, 1900, 2000, 2010))
+
+col_names <- unique(econ_bea$Description)
+
+econ_comp <- econ_bea %>% 
+  select(GeoFIPS, LineCode, Description, X2022) %>%
+  filter(LineCode %in% linecodes) %>%
+  spread(Description, X2022, fill = 0) %>%
+  select(-LineCode) %>%
+  #mutate_if(is.character, as.numeric) %>%
+  #group_by(GeoFIPS) %>%
+  #summarise(as.numeric(across(5:27, sum))) %>%
+  rename("FIPS" = "GeoFIPS") %>%
+  group_by(FIPS) %>%
+  summarise_all(sum)
+
+
+col_names <- unique(econ_bea$Description)
+
+econ_comp <- econ_comp %>%
+  group_by(FIPS) %>%
+  summarise(across(as.character(linecodes), sum))
+  
 
 update_fips <- function(date_set) {
   data_set$FIPS <- as.character(data_set$FIPS)

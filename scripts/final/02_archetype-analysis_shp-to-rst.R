@@ -82,7 +82,7 @@ tf_rast <- rasterize(vect(cejst_proj), ref_rast, field = "TF_PFS")
 td_rast <- rasterize(vect(cejst_proj), ref_rast, field = "TD_PFS")
 ealr_rast <- rasterize(vect(cejst_proj), ref_rast, field = "EALR_PFS") 
 pm25_rast <- rasterize(vect(cejst_proj), ref_rast, field = "PM25F_PFS")
-percent_sitesee_rast <- rasterize(vect(all_vars_proj$))
+percent_sitesee_rast <- rasterize(vect(all_vars_proj), field = ""))
 
 
 #crithab_rast <- rasterize(vect(crithab_proj), ref_rast, field = "listing_st")
@@ -117,7 +117,7 @@ rast_stack <- c(rruc_rast, vtpres_rast, vtnopres_rast, econ15_rast,
                 econ15_layers_rast, nam_layer_rast, lif_rast, lmi_rast,
                 tf_rast, td_rast, ealr_rast, pm25_rast)
 
-writeRaster(x = rast_stack, filename = paste0(here::here("data/processed/"), "arch_attri_04_", Sys.Date(), ".tif"), overwrite = TRUE)
+writeRaster(x = rast_stack, filename = paste0(here::here("data/processed/"), "arch_attri_05_", Sys.Date(), ".tif"), overwrite = TRUE)
 
 #---Check on the plots----
 plot(rast_stack[[37:42]])

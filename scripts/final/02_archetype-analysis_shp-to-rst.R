@@ -7,7 +7,7 @@ library(tigris)
 #---Load the shapefiles-----
 
 # variables from csv county data
-all_vars <- st_read(here::here("data/processed/all_vars_to_rst.shp"))
+all_vars <- st_read(here::here("data/processed/all_vars_to_rst2024-04-01.shp"))
 
 # Wilderness areas
 wild <- st_read(here::here("data/original/S_USA.Wilderness.shp"))
@@ -68,7 +68,7 @@ names(criti_dist_crop) <- "distance_to_crithab_m"
 rruc_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "RUCC_20")
 vtpres_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "av_vt_p")
 vtnopres_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "av_vt_n")
-econ15_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "e__2015")
+#econ15_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "e__2015")
 percent_demvt_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "ave_dem")
 percent_repvt_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "ave_rep")
 percent_forpay_rast <- rasterize(vect(all_vars_proj), ref_rast, field = "pct_pay")
@@ -82,14 +82,16 @@ tf_rast <- rasterize(vect(cejst_proj), ref_rast, field = "TF_PFS")
 td_rast <- rasterize(vect(cejst_proj), ref_rast, field = "TD_PFS")
 ealr_rast <- rasterize(vect(cejst_proj), ref_rast, field = "EALR_PFS") 
 pm25_rast <- rasterize(vect(cejst_proj), ref_rast, field = "PM25F_PFS")
+percent_sitesee_rast <- rasterize(vect(all_vars_proj$))
 
-crithab_rast <- rasterize(vect(crithab_proj), ref_rast, field = "listing_st")
 
-wild_rast <- rasterize(vect(wild_proj), ref_rast, field = "BOUNDARYST")
+#crithab_rast <- rasterize(vect(crithab_proj), ref_rast, field = "listing_st")
+
+#wild_rast <- rasterize(vect(wild_proj), ref_rast, field = "BOUNDARYST")
 
 #---Layerize (segregate) the categorical rasters----
 rruc_layers_rast <- terra::segregate(rruc_rast)
-econ15_layers_rast <- terra::segregate(econ15_rast)
+#econ15_layers_rast <- terra::segregate(econ15_rast)
 nam_layer_rast <- terra::segregate(nam_rast)
 
 # Update names

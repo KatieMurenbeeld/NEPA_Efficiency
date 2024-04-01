@@ -86,7 +86,7 @@ elect <- elect_cntx %>% #need to ignore NAs when calculating things
 
 econ_bea$Description <- trimws(econ_bea$Description)
 econ_bea$X2022 <- as.numeric(econ_bea$X2022)
-linecodes <- as.character(c(1, 9, 81, 100, 200, 300, 400, 500, 600, 700, 800, 807, 900, 1000,
+linecodes <- as.character(c(1, 81, 100, 200, 300, 400, 500, 600, 700, 800, 807, 900, 1000,
                1100, 1200, 1300, 1500, 1600, 1700, 1800, 1900, 2000, 2010))
 
 col_names <- unique(econ_bea$Description)
@@ -96,20 +96,13 @@ econ_comp <- econ_bea %>%
   filter(LineCode %in% linecodes) %>%
   spread(Description, X2022, fill = 0) %>%
   select(-LineCode) %>%
-  #mutate_if(is.character, as.numeric) %>%
-  #group_by(GeoFIPS) %>%
-  #summarise(as.numeric(across(5:27, sum))) %>%
   rename("FIPS" = "GeoFIPS") %>%
   group_by(FIPS) %>%
   summarise_all(sum)
 
+cols <- colnames(econ_comp[2:24])
 
-col_names <- unique(econ_bea$Description)
-
-econ_comp <- econ_comp %>%
-  group_by(FIPS) %>%
-  summarise(across(as.character(linecodes), sum))
-  
+econ_compercent <- cbind(econ_comp, econ_comp[cols]/econ_comp$`Compensation of employees (thousands of dollars) 1/`)
 
 update_fips <- function(date_set) {
   data_set$FIPS <- as.character(data_set$FIPS)
@@ -129,11 +122,14 @@ data_set <- delpop
 delpop_fips <- update_fips(delpop)
 data_set <- rucc
 rucc_fips <- update_fips(rucc)
+data_set <- econ_compercent
+econ_compercent_fips <- update_fips(econ_compercent) # need to adjust column names
 
-all_vars <- plyr::join_all(list(elect_fips, fordep_fips, nam_fips, econ_fips, delpop_fips, rucc_fips),
+all_vars <- plyr::join_all(list(elect_fips, fordep_fips, nam_fips, delpop_fips, rucc_fips),
                      by='FIPS', 
                      type='left')
 
+test <- left_join(all_vars, econ_compercent_fips)
 # Join to counties
 
 var_bdry <- left_join(all_vars, counties,
@@ -158,5 +154,5 @@ st_is_longlat(var_bdry)
 
 
 ## Write the validated and factorized shp to a new shp
-write_sf(obj = var_bdry, dsn = paste0(here::here("data/processed/"), "all_vars_to_rst.shp"), overwrite = TRUE, append = FALSE)
+write_sf(obj = var_bdry, dsn = paste0(here::here("data/processed/"), "all_vars_to_rst", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
 print("new shapefile written")

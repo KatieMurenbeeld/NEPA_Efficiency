@@ -125,7 +125,8 @@ colnames(econ_compercent)[25:47] <- names2
 voteloc <- vote_local %>%
   select(office, votes, county_fips) %>%
   group_by(office, county_fips) %>%
-  summarise(total_votes = sum(votes))
+  summarise(total_votes = sum(votes)) %>%
+  spread(office, total_votes, fill = 0)
 
 # Left-join to pop_2020 by FIPS
 # Calculate local voter turnout (could I get 2018 estimates instead?)
@@ -140,6 +141,12 @@ for (file in files) {
     summarise(total_votes = sum(votes))
   vote_gen <- rbind(vote_gen, tmp_sum)
 }
+
+## need to figure out which "offices" to filter out
+## sum again to get total votes by county for local elections (and general elec)
+## then combine with Census population data by FIPS code
+## then calculate the voter turnout (for each county total_votes/total_population)
+## but I may only want total population of eligible voters
 
 # need to open each state's csv
 # Then group by office and FIPS

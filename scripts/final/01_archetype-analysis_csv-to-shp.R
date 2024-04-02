@@ -14,6 +14,8 @@ rrlrbn_cc <- read_csv(paste0(here::here("data/original/rural_urban_cc_2023.csv")
 del_pop <- read_csv(paste0(here::here("data/original/population_estimates_2022.csv")))
 lcv_score <- read_csv(paste0(here::here("data/original/2019-house.csv")))
 econ_bea <- read.csv(paste0(here::here("data/original/CAINC6N__ALL_AREAS_2001_2022.csv")))
+vote_local <- read.csv(paste0(here::here("data/original/LOCAL_precinct_general.csv")))
+vote_gen <- data.frame()
 
 ## Load county boundaries from tigris
 counties <- tigris::counties()
@@ -46,6 +48,11 @@ delpop <- del_pop %>%
   filter(Attribute == "R_NET_MIG_2021") %>%
   select(FIPStxt, Value) %>%
   rename("FIPS" = "FIPStxt", "R_NET_MIG_2021" = "Value")
+
+pop_2020 <- del_pop %>%
+  filter(Attribute == "CENSUS_2020_POP") %>%
+  select(FIPStxt, Value) %>%
+  rename("FIPS" = "FIPStxt", "CENSUS_2020_POP" = "Value") 
 
 nam <- nat_amen %>%
   select(FIPS.Code, X1.Low..7.High) %>%
@@ -100,9 +107,44 @@ econ_comp <- econ_bea %>%
   group_by(FIPS) %>%
   summarise_all(sum)
 
-cols <- colnames(econ_comp[2:24])
+names <- c("acc_food", "art_rec", "emp_comp", "constr", "edu", "farm", "fin_ins",
+     "forest", "gov", "health", "info", "mngmnt", "manuf", "mining", "other",
+     "pro_scit", "real_est", "retail", "sightsee", "st_loc", "tran_war",
+     "utils", "ws_trade")
+colnames(econ_comp)[2:24] <- names
 
-econ_compercent <- cbind(econ_comp, econ_comp[cols]/econ_comp$`Compensation of employees (thousands of dollars) 1/`)
+econ_compercent <- cbind(econ_comp, econ_comp[names]/econ_comp$emp_comp)
+
+names2 <- c("acc_food_p", "art_rec_p", "emp_comp_p", "constr_p", "edu_p", "farm_p", "fin_ins_p",
+           "forest_p", "gov_p", "health_p", "info_p", "mngmnt_p", "manuf_p", "mining_p", "other_p",
+           "pro_scit_p", "real_est_p", "retail_p", "sightsee_p", "st_loc_p", "tran_war_p",
+           "utils_p", "ws_trade_p")
+
+colnames(econ_compercent)[25:47] <- names2
+
+voteloc <- vote_local %>%
+  select(office, votes, county_fips) %>%
+  group_by(office, county_fips) %>%
+  summarise(total_votes = sum(votes))
+
+# Left-join to pop_2020 by FIPS
+# Calculate local voter turnout (could I get 2018 estimates instead?)
+
+files <- list.files(path = here::here("data/original/precinct_2020/"), pattern = ".csv")
+
+for (file in files) {
+  tmp_data <- read.csv(paste0(here::here("data/original/precinct_2020/", file)))
+  tmp_sum <- tmp_data %>%
+    select(office, votes, county_fips) %>%
+    group_by(office, county_fips) %>%
+    summarise(total_votes = sum(votes))
+  vote_gen <- rbind(vote_gen, tmp_sum)
+}
+
+# need to open each state's csv
+# Then group by office and FIPS
+# Sum the votes 
+# append to dataframe
 
 update_fips <- function(date_set) {
   data_set$FIPS <- as.character(data_set$FIPS)
@@ -124,12 +166,14 @@ data_set <- rucc
 rucc_fips <- update_fips(rucc)
 data_set <- econ_compercent
 econ_compercent_fips <- update_fips(econ_compercent) # need to adjust column names
+econ_compercent_fips <- econ_compercent_fips %>% 
+  mutate(FIPS= trimws(as.character(FIPS)))
 
-all_vars <- plyr::join_all(list(elect_fips, fordep_fips, nam_fips, delpop_fips, rucc_fips),
+all_vars <- plyr::join_all(list(elect_fips, fordep_fips, nam_fips, 
+                                delpop_fips, rucc_fips, econ_compercent_fips),
                      by='FIPS', 
                      type='left')
 
-test <- left_join(all_vars, econ_compercent_fips)
 # Join to counties
 
 var_bdry <- left_join(all_vars, counties,

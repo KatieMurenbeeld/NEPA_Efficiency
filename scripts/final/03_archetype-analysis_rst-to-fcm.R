@@ -11,26 +11,33 @@ library(viridis)
 
 #---Load the data-----
 ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
-arch_attri <- rast(here::here("data/processed/arch_attri_04_2024-03-29.tif"))
+arch_attri <- rast(here::here("data/processed/arch_attri_05_2024-04-03.tif"))
 mill_dist <- rast(here::here("data/processed/mill_dist_open.tif"))
 mill_cap_hot <- rast(here::here("data/processed/test_hotspot.tif"))
 agc_flux <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_carbon_flux_ED_GEDI_ICESat2.tif")
 agc_stock <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_carbon_stock_ED_GEDI.tif")
+biodiver <- rast(here::here("data/original/distribute_RecognizedBiodiversityValue_2020_7_2020/RecognizedBiodiversityValue_USERC_2020_7_2.tif"))
+geophys <- rast(here::here("data/original/Settings/Settings_2020_3_31_USAwwat.tif"))
 
 # ignore for now, file corrupted?
 #gpp_rast <- rast(here::here("data/original/CarbonFlux_2000_2013/Average_GPP_2000_2013.img"))
 
 #---Process the original rasters----
-# Resample then crop
+# Aggregate, resample or reproject, and crop
 #agc_stock_proj <- project(agc_stock, 
 #                          y = "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs")
-
 #agc_stock_crop <- crop(agc_stock_proj, ref_rast, mask = TRUE)
 
+biodiver_agg <- aggregate(biodiver, 100, fun = mean)
+biodiver_resamp <- resample(biodiver_agg, ref_rast)
+biodiver_crop <- crop(biodiver_resamp, ref_rast, mask = TRUE)
 
+geophys_agg <- aggregate(geophys, 100, fun = mean)
+geophys_resamp <- project(geophys_agg, ref_rast)
+geophys_crop <- crop(geophys_resamp, ref_rast, mask = TRUE)
 
 # Check alignment 
-rast_stack <- c(arch_attri, mill_dist)
+rast_stack <- c(arch_attri, mill_dist, biodiver_crop, geophys_crop)
 
 #---Process raster for use with geocmeans----
 
@@ -38,17 +45,21 @@ rast_stack <- c(arch_attri, mill_dist)
 names(rast_stack)
 
 # Select Variables for FCmeans
-rst_fcm <- rast_stack[[c("distance_to_crithab_m", "distance_to_wilderness_m", 
-                         "last", "WHP", "recreation", "LIF_PFS", "LMI_PFS", 
-                         "EALR_PFS", "av_vt_n", "pct_pay")]]
-names(rst_fcm)
-#writeRaster(rst_fcm, paste0("data/processed/rast_fcm_04_", Sys.Date(), ".tif"), overwrite = TRUE)
+rst_fcm <- rast_stack[[c("RUCC_20", "pct_pay", "sghts_p", "gov_p",
+                         "ave_dem", "WHP", "d_RCRCNRBV", 
+                         "distance_to_wilderness_m", "last")]]
+names(rst_fcm) <- c("rrlurb", "pct_for_pay", "pct_sight_pay", 
+                    "pct_gov_p", "ave_dem", "WHP", "biodiveristy", 
+                    "distance_to_wilderness_m", "distance_to_mill_m")
+#writeRaster(rst_fcm, paste0("data/processed/rast_fcm_07_", Sys.Date(), ".tif"), overwrite = TRUE)
 
 # Scale the data
 rst_fcm_sc <- scale(rst_fcm)
 
 # Quickly investigate the correlation between the attributes
-layerCor(rst_fcm, "pearson", na.rm = TRUE)
+correlation <- layerCor(rst_fcm, "pearson", na.rm = TRUE)
+fcm_07_cor <- as.data.frame(correlation$correlation)
+#write_csv(fcm_07_cor, here::here("data/processed/fcm_07_cor.csv"))
 
 # Convert to a simple list of SpatRaster
 dataset <- lapply(names(rst_fcm_sc), function(n){
@@ -62,7 +73,7 @@ names(dataset) <- names(rst_fcm_sc)
 ### Code below from https://jeremygelb.github.io/geocmeans/articles/web_vignettes/rasters.html
 # finding an appropriate k and m values
 FCMvalues <- select_parameters.mc(algo = "FCM", data = dataset, 
-                                  k = 2:6, m = seq(1.0,2.5,0.25), spconsist = FALSE, 
+                                  k = 5:8, m = seq(1.0,2.5,0.25), spconsist = FALSE, 
                                   indices = c("XieBeni.index", "Explained.inertia",
                                               "Silhouette.index"),
                                   verbose = TRUE)
@@ -74,7 +85,7 @@ sil.idx <- ggplot(FCMvalues) +
   coord_fixed(ratio=0.125) +
   scale_fill_viridis()
 sil.idx
-ggsave(here::here("figures/FCM_05_sil_idx.png"), sil.idx, 
+ggsave(here::here("figures/FCM_07_sil_idx_02.png"), sil.idx, 
        width = 12, height = 12, dpi = 300)
 
 # plotting the explained inertia
@@ -84,25 +95,25 @@ ex.inert <- ggplot(FCMvalues) +
   scale_fill_viridis() +
   coord_fixed(ratio=0.125)
 ex.inert
-ggsave(here::here("figures/FCM_05_ex_inert.png"), ex.inert, 
+ggsave(here::here("figures/FCM_07_ex_inert_02.png"), ex.inert, 
        width = 12, height = 12, dpi = 300)
 
 #---Run the FCM---- 
-FCM_result <- CMeans(dataset, k = 5, m = 2.25, standardize = FALSE)
+FCM_result <- CMeans(dataset, k = 6, m = 2.0, standardize = FALSE)
 map.res <- rast(FCM_result$rasters)
-writeRaster(map.res[["Groups"]], filename = paste0("data/processed/FCM_05_", Sys.Date(), ".tif"))
+writeRaster(map.res[["Groups"]], filename = paste0("data/processed/FCM_07_", Sys.Date(), ".tif"))
 
 
 ##---save the iteration, k, m as a dataframe----
-#aa_iteration <- data.frame(iteration_name = character(),
-#                           attris = character(),
-#                           k = numeric(),
-#                           m = numeric())
+aa_iteration <- data.frame(iteration_name = character(),
+                           attris = character(),
+                           k = numeric(),
+                           m = numeric())
 
-iteration_name <- "FCM_05"
+iteration_name <- "FCM_07"
 attris <- paste(names(rst_fcm), collapse= ", ")
-k <- 5
-m <- 2.25
+k <- 6
+m <- 2
 
 aa_iteration[nrow(aa_iteration) + 1,] <- list(iteration_name, attris, k, m)
 

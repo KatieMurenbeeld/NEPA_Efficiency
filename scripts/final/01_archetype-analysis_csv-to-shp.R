@@ -205,5 +205,5 @@ st_is_longlat(var_bdry)
 
 
 ## Write the validated and factorized shp to a new shp
-write_sf(obj = var_bdry, dsn = paste0(here::here("data/processed/"), "all_vars_to_rst", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
+write_sf(obj = var_bdry, dsn = paste0(here::here("data/processed/"), "all_vars_to_rst_", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
 print("new shapefile written")

@@ -14,8 +14,8 @@ library(ggsci)
 # Load the data
 fs_nf <- st_read("data/original/S_USA.AdministrativeForest.shp")
 fs_reg <- st_read("data/original/S_USA.AdministrativeRegion.shp")
-conus_attri <- rast("data/processed/rast_fcm_06_2024-04-03.tif")
-map.conus <- rast("data/processed/FCM_06_2024-04-03.tif")
+conus_attri <- rast("data/processed/rast_fcm_08_2024-04-05.tif")
+map.conus <- rast("data/processed/FCM_08_2024-04-05.tif")
 
 ## Reproject the forest service shapes to NAD83
 fs_nf.proj <- fs_nf %>% 
@@ -41,7 +41,7 @@ fcm_nf_map <- ggplot() +
   theme(legend.position = "bottom")
 
 fcm_nf_map
-ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_nf_map_iter007_", Sys.Date(), ".png"), plot = fcm_nf_map, width = 12, height = 12, dpi = 300)  
+ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_nf_map_iter008_", Sys.Date(), ".png"), plot = fcm_nf_map, width = 12, height = 12, dpi = 300)  
 
 ### And the Forest Region boundaries
 
@@ -53,7 +53,7 @@ fcm_reg_map <- ggplot() +
   theme(legend.position = "bottom")
 
 fcm_reg_map
-ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_07_reg_map_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
+ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_08_reg_map_", Sys.Date(), ".png"), plot = fcm_reg_map, width = 12, height = 12, dpi = 300)  
 
 ## Create maps of the attributes
 rrl.df <- conus_attri$rrlurb %>% as.data.frame(xy = TRUE)
@@ -83,31 +83,31 @@ rrl_map
 names(conus_attri) 
 #<- c("RUCC_20", "pct_pay", "NAT_AME", "R_NET_M", "WHP", "last")
 
-#
 all.vals <- c(map.conus[["Groups"]], conus_attri)
 
 vals <- as.data.frame(values(all.vals, na.rm = TRUE, data.frame = TRUE)) 
 
 # scale the values before pivot_longer
-vals$rrlurb <- scale(vals$rrlurb)
+vals$net_mig <- scale(vals$net_mig)
 vals$pct_for_pay <- scale(vals$pct_for_pay)
-#vals$pct_sight_pay <- scale(vals$pct_sight_pay)
-#vals$pct_gov_p <- scale(vals$pct_gov_p)
+vals$pct_sight_pay <- scale(vals$pct_sight_pay)
+vals$pct_gov_p <- scale(vals$pct_gov_p)
 vals$ave_dem <- scale(vals$ave_dem)
-#vals$WHP <- scale(vals$WHP)
-vals$biodiveristy <- scale(vals$biodiveristy)
+vals$less_coll <- scale(vals$less_coll)
+vals$WHP <- scale(vals$WHP)
+vals$geophysical <- scale(vals$geophysical)
 vals$distance_to_wilderness_m <- scale(vals$distance_to_wilderness_m)
-#vals$distance_to_mill_m <- scale(vals$distance_to_mill_m)
+vals$distance_to_mill_m <- scale(vals$distance_to_mill_m)
 #vals$LMI_PFS <- scale(vals$LMI_PFS)
 #vals$av_vt_n <- scale(vals$av_vt_n)
 #vals$pct_pay <- scale(vals$pct_pay)
 
-colnames(vals) <- c("group", "rrlurb", "pct_for_pay",  
-                     "ave_dem",  "biodiversity",
-                    "dist_to_wild_m")
+colnames(vals) <- c("group", "net_mig", "pct_for_pay", "pct_sight_pay",
+                    "pct_gov_pay", "ave_dem", "less_coll", "WHP", "geophysical",
+                    "dist_to_wild_m", "dist_to_mill_m")
 
 vals.df <- as.data.frame(vals) %>%
-  pivot_longer(., rrlurb:dist_to_wild_m, names_to = "variable", values_to = "val")
+  pivot_longer(., net_mig:dist_to_mill_m, names_to = "variable", values_to = "val")
 
 # not sure if this part is needed?
 vals.df.2 <- vals.df %>% 
@@ -125,7 +125,7 @@ multi.int.plot <- ggplot(data = vals.df.sum, aes(x = val, y = variable, color = 
   scale_color_brewer(palette = "Set2") 
 multi.int.plot
 
-ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_07_multi_point_plot_", Sys.Date(), ".png"), plot = multi.int.plot, width = 12, height = 15, dpi = 300)  
+ggsave(paste0("~/Analysis/NEPA_Efficiency/figures/fcm_08_multi_point_plot_", Sys.Date(), ".png"), plot = multi.int.plot, width = 12, height = 15, dpi = 300)  
 
 ## Make a different plot to look at distribution of attribute values in clusters
 vals.df.sum2 <- vals.df %>% 
@@ -149,10 +149,10 @@ fcm.hist <- ggplot(data= vals.df.sum2, mapping=aes(
   xlab("Variable") +
   theme_bw(base_size = 16) +
   theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1), aspect.ratio = 0.5)+
-  facet_wrap(vars(group), scales= "fixed", ncol=1, strip.position = "left")
+  facet_wrap(vars(group), scales= "free_y", ncol=1, strip.position = "left")
 fcm.hist
 
-ggsave(here::here("figures/fcm_06_attri_hist.png"), fcm.hist,
+ggsave(here::here("figures/fcm_08_attri_hist_free_y.png"), fcm.hist,
        width = 15, height = 20, dpi = 300)
 
 

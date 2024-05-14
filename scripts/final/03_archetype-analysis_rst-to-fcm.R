@@ -18,6 +18,8 @@ agc_flux <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_ca
 agc_stock <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_carbon_stock_ED_GEDI.tif")
 biodiver <- rast(here::here("data/original/distribute_RecognizedBiodiversityValue_2020_7_2020/RecognizedBiodiversityValue_USERC_2020_7_2.tif"))
 geophys <- rast(here::here("data/original/Settings/Settings_2020_3_31_USAwwat.tif"))
+spei <- rast(here::here("data/original/GRIDMET-speih-12mo.tif"))
+elevation <- rast(here::here("data/original/_ags_b3860be0_3b01_41fb_ba0d_06d68b293983.tif"))
 
 # ignore for now, file corrupted?
 #gpp_rast <- rast(here::here("data/original/CarbonFlux_2000_2013/Average_GPP_2000_2013.img"))
@@ -35,6 +37,11 @@ biodiver_crop <- crop(biodiver_resamp, ref_rast, mask = TRUE)
 geophys_agg <- aggregate(geophys, 100, fun = mean)
 geophys_resamp <- project(geophys_agg, ref_rast)
 geophys_crop <- crop(geophys_resamp, ref_rast, mask = TRUE)
+
+ele_proj <- project(elevation, ref_rast)
+ele_resamp <- resample(ele_proj, ref_rast)
+ele_crop <- crop(ele_resamp, ref_rast, mask = TRUE)
+
 
 # Check alignment 
 rast_stack <- c(arch_attri, mill_dist, biodiver_crop, geophys_crop)

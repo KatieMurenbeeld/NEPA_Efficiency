@@ -369,6 +369,10 @@ st_make_valid(conus_fedp)
 ggplot() +
   geom_sf(data = conus_fed, mapping = aes(fill = Mang_Name, color = Mang_Name))
 
+# I think the next thing to do is to combine with the counties and then get a 
+# % of land in the county that belongs to a specific Federal agency
 
-
+ggplot() +
+  geom_sf(data = conus_fed, mapping = aes(fill = Mang_Name, color = Mang_Name)) + 
+  geom_sf(data = counties)
 

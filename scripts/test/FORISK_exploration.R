@@ -350,17 +350,27 @@ padus_layers <- st_layers(here::here("data/original/PADUS4_0Geodatabase/PADUS4_0
 fed <- st_read(here::here("data/original/PADUS4_0Geodatabase/PADUS4_0_Geodatabase.gdb"), layer = "PADUS4_0Designation")      
 
 conus_fed <- fed %>%
-  filter(State_Nm %in% continental.states$state)
+  filter(State_Nm %in% continental.states$state) %>%
+  filter(Mang_Type == "FED")
 
+identical(st_crs(conus_fed), st_crs(counties))
 
-identical(st_crs(fed), st_crs(counties))
-fedp <- st_transform(fed, st_crs(counties))
-identical(st_crs(fedp), st_crs(counties))
+conus_fedp <- st_transform(conus_fed, st_crs(counties))
+identical(st_crs(conus_fedp), st_crs(counties))
 
-cropped<-st_crop(fedp, st_bbox(counties))
+# Make the multisurface into multipolygons
+conus_fedp <- conus_fedp %>% st_cast("MULTIPOLYGON")
+
+# Check and fix validity
+st_is_valid(conus_fedp)
+st_make_valid(conus_fedp)
+#geoms <- lapply(conus_fedp.split$geometry, `[` )
+#mp <- lapply( geoms, function(x) sf::st_multipolygon( x = x ) )
+
+#system('ogr2ogr  /home/x/Downloads/output.gpkg /home/x/Downloads/gc_cast.gpkg -explodecollections -nlt CONVERT_TO_LINEAR')
 
 ggplot() +
-  geom_sf(data = conus_fed, mapping = aes(color = Mang_Name))
+  geom_sf(data = conus_fed, mapping = aes(fill = Mang_Name, color = Mang_Name))
 
 
 

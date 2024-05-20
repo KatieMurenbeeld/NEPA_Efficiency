@@ -364,10 +364,7 @@ conus_fedp <- conus_fedp %>% st_cast("MULTIPOLYGON")
 # Check and fix validity
 st_is_valid(conus_fedp)
 st_make_valid(conus_fedp)
-#geoms <- lapply(conus_fedp.split$geometry, `[` )
-#mp <- lapply( geoms, function(x) sf::st_multipolygon( x = x ) )
 
-#system('ogr2ogr  /home/x/Downloads/output.gpkg /home/x/Downloads/gc_cast.gpkg -explodecollections -nlt CONVERT_TO_LINEAR')
 
 ggplot() +
   geom_sf(data = conus_fed, mapping = aes(fill = Mang_Name, color = Mang_Name))

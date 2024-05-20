@@ -11,12 +11,17 @@ options(timeout=6000)
 
 # There are three file types we will download: csv, shp, and tif/img.
 
+# update this to detect .zip in the file name as well
 download_data <- function(url, file_name) {
   if (str_detect(url, ".zip")) {
     tmp <- tempfile()
     download.file(url, tmp)
     unzip(zipfile = tmp, exdir = here::here("data/original/"))
-  } else {
+  } else if (str_detect(file_name, ".zip")) {
+    download.file(url, here::here(paste0("data/original/", file_name)))
+    unzip(zipfile = here::here(paste0("data/original/", file_name)))
+  }
+  else {
     download.file(url, here::here(paste0("data/original/", file_name)))
   }
 }
@@ -26,7 +31,7 @@ download_data <- function(url, file_name) {
 # Partisan sorting, need to download from website
 
 url <- "https://dataverse.harvard.edu/file.xhtml?fileId=8165593&version=3.0#"
-file_name <- "partisan_sorting"
+file_name <- "partisan_sorting.csv"
 
 download_data(url, file_name)
 
@@ -72,7 +77,6 @@ url <- "https://www.fs.usda.gov/rds/archive/products/RDS-2021-0077/RDS-2021-0077
 file_name <- "forest_depend.zip"
 
 download_data(url, file_name)
-unzip(file_name)
 
 # Election Context 2018
 x <- getURL("https://raw.githubusercontent.com/MEDSL/2018-elections-unoffical/master/election-context-2018.csv")
@@ -104,6 +108,13 @@ url <- "https://data.fs.usda.gov/geodata/edw/edw_resources/shp/S_USA.Wilderness.
 file_name = ""
 
 download_data(url, file_name)
+
+# FAA Natioanl Tree Growth Database
+url <- "https://www.airporttech.tc.faa.gov/DesktopModules/EasyDNNNews/DocumentDownload.ashx?portalid=0&moduleid=3682&articleid=2870&documentid=3042"
+file_name = "faa_tree-growth-ecoregions.zip"
+
+download_data(url, file_name)
+#unzip(paste0(here::here("data/original/"), file_name),  exdir = here::here("data/original/"))
 
 # Climate and Economic Justice Screening Tool
 url <- "https://static-data-screeningtool.geoplatform.gov/data-versions/1.0/data/score/downloadable/1.0-shapefile-codebook.zip"
@@ -143,5 +154,11 @@ url <- ""
 file_name <- ""
 
 download_data(url, filename)
+
+#---Data that needs more indepth processing or is by subscription only----------
+
 # Wildfire Risk
 # See script 00_archetype-analysis_download-prep-fire.R
+
+# Mill capacity data 
+# See script 00_archetype_analysis_forisk-analysis.R

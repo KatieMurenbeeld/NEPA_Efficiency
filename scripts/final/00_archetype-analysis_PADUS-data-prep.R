@@ -12,6 +12,7 @@ library(units)
 library(stars)
 library(gstat)
 library(spdep)
+library(raster)
 
 
 # 1. Download the PADUS geodatabase
@@ -34,7 +35,7 @@ continental.states <- us.states[us.states$state != "AK" & us.states$state != "HI
 ## Download the county boundaries and filter by states
 counties <- tigris::counties(state = continental.states$state, cb = TRUE)
 
-## Load the PADUS4_0Designation layer of the PADUS geodatabase and filter for by states
+## Load the PADUS4_0Fee layer of the PADUS geodatabase and filter for by states
 
 ### Check the layers of the geodatabase, here choose the PADUS4_0Fee layer
 padus_layers <- st_layers(here::here("data/original/PADUS4_0Geodatabase/PADUS4_0_Geodatabase.gdb"))
@@ -45,7 +46,10 @@ conus_fed <- fed %>%
   filter(State_Nm %in% continental.states$state) %>%
   filter(Mang_Type == "FED")
 
-# 3. Set the projection and check for shape validity
+### Once the data has been filtered, remove fed
+rm(fed)
+
+# 3. Set the projection and check for shape validity and empty geometries
 conus_fedp <- st_transform(conus_fed, st_crs(counties))
 identical(st_crs(conus_fedp), st_crs(counties))
 
@@ -57,19 +61,20 @@ st_is_valid(conus_fedp)
 conus_fedp_val <- st_make_valid(conus_fedp)
 st_is_valid(conus_fedp_val)
 
-### Look at a quick map
-ggplot() +
-  geom_sf(data = conus_fedp_val, mapping = aes(fill = Mang_Name, color = Mang_Name))
+## Check for and remove empty geometries
+st_is_empty(conus_fedp_val)
+conus_fedp_val_noempty = conus_fedp_val[!st_is_empty(conus_fedp_val),]
+st_is_empty(conus_fedp_val_noempty)
 
-## Rasterize the data
-### Load the reference raster from fire-data-prep
+# 4. Rasterize the data
+## Load the reference raster from fire-data-prep
 ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
 
-### Set to the same projection
-conus_fedp_val_p <- st_transform(conus_fedp_val, crs(ref_rast))
+## Set to the same projection
+conus_fed_val_noempty_p <- st_transform(conus_fedp_val_noempty, crs(ref_rast))
 
-### Rasterize the data
-fed_rast <- rasterize(vect(conus_fedp_val_p), ref_rast, field = "Mang_Name")
+## Rasterize the data and write the raster
+fed_rast <- rasterize(vect(conus_fed_val_noempty_p), ref_rast, field = "Mang_Name")
+#writeRaster(fed_rast, here::here("data/processed/fed_lands_3000m.tif"), overwrite = TRUE)
 
-### Having a hard time rasterizing the data...may want to just pick out BLM, USFS and NPS?
-
+# 5. Calculate...

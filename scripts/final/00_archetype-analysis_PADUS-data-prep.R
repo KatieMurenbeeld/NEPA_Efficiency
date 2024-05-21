@@ -62,27 +62,22 @@ sf_use_s2(FALSE)
 all(st_is_valid(conus_fedp))
 conus_fedp_val <- st_make_valid(conus_fedp)
 all(st_is_valid(conus_fedp_val))
-
-
 #conus_fedp_val_buff <- st_buffer(conus_fedp_val, dist = 0)
-
 
 ## Check for and remove empty geometries
 all(st_is_empty(conus_fedp_val))
 #conus_fedp_val_noempty = conus_fedp_val[!st_is_empty(conus_fedp_val),]
 #st_is_empty(conus_fedp_val_noempty)
 
-
-
-# 4. Rasterize the data
+# 4. Rasterize the data, may not need to do this until later? Save a shapefile instead?
 ## Load the reference raster from fire-data-prep
-ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
+#ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
 
 ## Set to the same projection
-conus_fed_val_noempty_p <- st_transform(conus_fedp_val_noempty, crs(ref_rast))
+#conus_fed_val_noempty_p <- st_transform(conus_fedp_val_noempty, crs(ref_rast))
 
 ## Rasterize the data and write the raster
-fed_rast <- rasterize(vect(conus_fed_val_noempty_p), ref_rast, field = "Mang_Name")
+#fed_rast <- rasterize(vect(conus_fed_val_noempty_p), ref_rast, field = "Mang_Name")
 #writeRaster(fed_rast, here::here("data/processed/fed_lands_3000m.tif"), overwrite = TRUE)
 
 # 5. Calculate the area of overlapping Fed and county polygons (maybe I didn't need to figure out the rasterization yet...)
@@ -90,8 +85,10 @@ fed_rast <- rasterize(vect(conus_fed_val_noempty_p), ref_rast, field = "Mang_Nam
 
 ## Calculate area and tidy up
 intersect_pct <- st_intersection(counties, conus_fedp_val) %>% 
-  mutate(intersect_area = st_area(.)) %>%   # create new column with shape area
-  dplyr::select(GEOID, intersect_area) %>%   # only select columns needed to merge
+  mutate(intersect_area = st_area(.)) %>% # create new column with shape area
+  group_by(GEOID) %>% # group by GEOID
+  summarise(intersect_area_sum = sum(intersect_area)) %>% # add the intersect areas
+  dplyr::select(GEOID, intersect_area_sum) %>%   # only select columns needed to merge
   st_drop_geometry()  # drop geometry as we don't need it
 
 # Create a fresh area variable for counties
@@ -100,9 +97,16 @@ counties <- mutate(counties, county_area = st_area(counties))
 # Merge by county name
 counties <- merge(counties, intersect_pct, by = "GEOID", all.x = TRUE)
 
-# Calculate coverage
+# Calculate coverage and replace NA with 0
 counties <- counties %>% 
-  mutate(coverage = as.numeric(intersect_area/county_area))
+  mutate(coverage = as.numeric(intersect_area_sum/county_area))
+counties$coverage[is.na(counties$coverage)] <- 0
+
+## save as a shapefile
+write_sf(obj = counties, dsn = paste0(here::here("data/processed/"), "county_fed_gov_coverage_pct", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
+print("new shapefile written")
+
+  
 
 
 

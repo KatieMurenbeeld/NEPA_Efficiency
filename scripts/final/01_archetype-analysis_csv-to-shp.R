@@ -3,6 +3,7 @@ library(sf)
 library(terra)
 library(tidyverse)
 library(tigris)
+library(readxl)
 
 ## Load the csv files
 elect_cntx <- read_csv(paste0(here::here("data/original/election_context_2018.csv")))
@@ -15,6 +16,7 @@ del_pop <- read_csv(paste0(here::here("data/original/population_estimates_2022.c
 lcv_score <- read_csv(paste0(here::here("data/original/2019-house.csv")))
 econ_bea <- read.csv(paste0(here::here("data/original/CAINC6N__ALL_AREAS_2001_2022.csv")))
 vote_local <- read.csv(paste0(here::here("data/original/LOCAL_precinct_general.csv")))
+bric <- read_excel(paste0(here::here("data/original/bric2020_us_forweb.xlsx")))
 vote_gen <- data.frame()
 
 ## Load county boundaries from tigris

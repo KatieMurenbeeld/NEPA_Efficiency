@@ -14,9 +14,9 @@ library(units)
 ## download the PADUS4_0Geodatabase.zip 
 ## The download requires one to pass a CAPTCHA challenge 
 
-# 2. Load the data
+# 2. Load the data and filter for the contiguous US (CONUS)
 
-## Get list of states in the contiguous US
+## Get list of states in the CONUS
 us.abbr <- unique(fips_codes$state)[1:51]
 us.name <- unique(fips_codes$state_name)[1:51]
 
@@ -50,7 +50,7 @@ identical(st_crs(conus_fedp), st_crs(counties))
 ## Make the multisurface into multipolygons
 conus_fedp <- conus_fedp %>% st_cast("MULTIPOLYGON")
 
-# Turn off using spherical geometry??
+# Turn off using spherical geometry
 sf_use_s2(FALSE)
 ## Check and fix validity
 all(st_is_valid(conus_fedp))
@@ -63,7 +63,9 @@ all(st_is_empty(conus_fedp_val))
 #conus_fedp_val_noempty = conus_fedp_val[!st_is_empty(conus_fedp_val),]
 #st_is_empty(conus_fedp_val_noempty)
 
-# 4. Rasterize the data, may not need to do this until later? Save a shapefile instead?
+
+#----
+#4. Rasterize the data, may not need to do this until later? Save a shapefile instead?
 ## Load the reference raster from fire-data-prep
 #ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
 
@@ -73,6 +75,7 @@ all(st_is_empty(conus_fedp_val))
 ## Rasterize the data and write the raster
 #fed_rast <- rasterize(vect(conus_fed_val_noempty_p), ref_rast, field = "Mang_Name")
 #writeRaster(fed_rast, here::here("data/processed/fed_lands_3000m.tif"), overwrite = TRUE)
+#----
 
 # 5. Calculate the area of overlapping Fed and county polygons (maybe I didn't need to figure out the rasterization yet...)
 ## from stack overflow https://gis.stackexchange.com/questions/362466/calculate-percentage-overlap-of-2-sets-of-polygons-in-r
@@ -96,18 +99,21 @@ counties <- counties %>%
   mutate(coverage = as.numeric(intersect_area_sum/county_area))
 counties$coverage[is.na(counties$coverage)] <- 0
 
+counties_sub <- counties %>%
+  dplyr::select(GEOID, intersect_area_sum, coverage)
+
 ## save as a shapefile
-write_sf(obj = counties, dsn = paste0(here::here("data/processed/"), "county_fed_gov_coverage_pct", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
-print("new shapefile written")
+#write_sf(obj = counties, dsn = paste0(here::here("data/processed/"), "county_fed_gov_coverage_pct", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
+#print("new shapefile written")
 
 # 6. Calculate the Shannon Diversity Index for Federal ownership by county
 
 ## Calculate area and tidy up
-fed_intersect <- st_intersection(counties, conus_fedp_val) %>% 
+fed_intersect <- st_intersection(counties_sub, conus_fedp_val) %>% 
   mutate(fed_intersect = st_area(.)) %>% # create new column with shape area
   group_by(GEOID, Mang_Name) %>% # group by GEOID
   summarise(fed_inter_sum = sum(fed_intersect)) %>%
-  dplyr::select(GEOID, Mang_Name, fed_inter_sum) %>%   # only select columns needed to merge
+  dplyr::select(GEOID, Mang_Name, fed_inter_sum, intersect_area_sum, coverage) %>%   # only select columns needed to merge
   st_drop_geometry()
   
 # Create a fresh area variable for counties

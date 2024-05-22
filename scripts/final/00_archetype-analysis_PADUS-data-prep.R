@@ -123,13 +123,31 @@ counties_prop <- counties_join %>%
          step1 = -prop * log(prop))
 counties_prop$step1[is.na(counties_prop$step1)] <- 0
 
+counties_fed_rich <- counties_prop %>%
+  group_by(., GEOID) %>%
+  summarise(., numfed = n())
+
 counties_shannon <- counties_prop %>% 
+  drop_na(Mang_Name) %>%
   group_by(., GEOID) %>% 
-  summarise(., numact = n(), 
+  summarise(., numfed = n(), 
             H = sum(step1),
             fedarea = unique(fed_inter_sum),
             footprint = unique(county_area),
-            E = H/log(drop_units(fedarea)))
+            E = H/log((fedarea)))
 counties_shannon$E <- ifelse(drop_units(counties_shannon$fedarea) == 0, 1, counties_shannon$E)
 
+shannon_diversity <- counties_prop %>%
+  group_by(., GEOID) %>%
+  summarise(H = sum(step1))
+
+shannon <- counties_prop %>%
+  drop_na(Mang_Name) %>%
+  group_by(., GEOID) %>%
+  summarise(., numfed = n(), 
+            H = sum(step1)) %>%
+  dplyr::select(GEOID, numfed, H) %>%
+  st_drop_geometry()
+
+counties_shannon <- left_join(counties, shannon)
 

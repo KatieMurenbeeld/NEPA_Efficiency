@@ -137,6 +137,9 @@ file_name <- ""
 
 download_data(url, file_name)
 
+# Elevation 
+## from the USGS national map https://apps.nationalmap.gov/3depdem/ export the 
+
 # National Land Cover Data 2021
 url <- "https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2021_land_cover_l48_20230630.zip"
 file_name <- ""
@@ -145,6 +148,12 @@ download_data(url, file_name)
 
 # Land Cover Change Index
 url <- "https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2001_2021_land_cover_change_index_l48_20230630.zip"
+file_name <- ""
+
+download_data(url, file_name)
+
+# Forest Type
+url <- "https://www.notion.so/CONUS-Forest-Type-1d0c781dd0474cdf82c95015ca7dd5a9?pvs=4"
 file_name <- ""
 
 download_data(url, file_name)

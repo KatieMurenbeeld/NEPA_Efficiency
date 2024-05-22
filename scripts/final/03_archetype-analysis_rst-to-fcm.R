@@ -45,6 +45,14 @@ ele_proj <- project(elevation, ref_rast)
 ele_resamp <- resample(ele_proj, ref_rast)
 ele_crop <- crop(ele_resamp, ref_rast, mask = TRUE)
 
+## For forest type group into either hardwood or softwood
+hardwood <- c("Oak - Pine Group", "Oak - Hickory Group", "Oak - Gum - Cypress Group", 
+              "Elm - Ash - Cottonwood Group", "Maple - Beech - Birch Group", 
+              "Tropical Hardwoods Group", "Aspen - Birch Group", "Exotic Hardwoos Group", 
+              "Alder - Maple Group", "Wester Oak Group", "Tanoak - Laurel Group", 
+              "Other Western Hardwoods Group")
+softwood <- c("")
+
 
 # Check alignment 
 rast_stack <- c(arch_attri, mill_dist, biodiver_crop, geophys_crop)

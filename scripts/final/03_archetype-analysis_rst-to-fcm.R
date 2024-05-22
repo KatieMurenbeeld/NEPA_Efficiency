@@ -20,6 +20,7 @@ biodiver <- rast(here::here("data/original/distribute_RecognizedBiodiversityValu
 geophys <- rast(here::here("data/original/Settings/Settings_2020_3_31_USAwwat.tif"))
 spei <- rast(here::here("data/original/GRIDMET-speih-12mo.tif"))
 elevation <- rast(here::here("data/original/_ags_b3860be0_3b01_41fb_ba0d_06d68b293983.tif"))
+land_cover <- rast(here::here("data/original/nlcd_2021_land_cover_l48_20230630.img"))
 
 # ignore for now, file corrupted?
 #gpp_rast <- rast(here::here("data/original/CarbonFlux_2000_2013/Average_GPP_2000_2013.img"))

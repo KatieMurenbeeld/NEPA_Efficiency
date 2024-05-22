@@ -2,17 +2,11 @@ library(tidyverse)
 library(terra)
 library(sf)
 library(sp)
-library(readr)
 library(ggplot2)
-library(ggmap)
 library(tigris)
 library(tmap)
-library(patchwork)
-library(units)
-library(stars)
-library(gstat)
-library(spdep)
 library(raster)
+library(units)
 
 
 # 1. Download the PADUS geodatabase
@@ -106,9 +100,36 @@ counties$coverage[is.na(counties$coverage)] <- 0
 write_sf(obj = counties, dsn = paste0(here::here("data/processed/"), "county_fed_gov_coverage_pct", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
 print("new shapefile written")
 
+# 6. Calculate the Shannon Diversity Index for Federal ownership by county
+
+## Calculate area and tidy up
+fed_intersect <- st_intersection(counties, conus_fedp_val) %>% 
+  mutate(fed_intersect = st_area(.)) %>% # create new column with shape area
+  group_by(GEOID, Mang_Name) %>% # group by GEOID
+  summarise(fed_inter_sum = sum(fed_intersect)) %>%
+  dplyr::select(GEOID, Mang_Name, fed_inter_sum) %>%   # only select columns needed to merge
+  st_drop_geometry()
   
+# Create a fresh area variable for counties
+counties_join <- mutate(counties, county_area = drop_units(st_area(counties)))
 
+# Merge by county name
+counties_join <- merge(counties_join, drop_units(fed_intersect), by = "GEOID", all.x = TRUE)
+counties_join$fed_inter_sum[is.na(counties_join$fed_inter_sum)] <- 0
 
+# Calculate Shannon Index and replace NA with 0
+counties_prop <- counties_join %>% 
+  mutate(., prop = fed_inter_sum/county_area,
+         step1 = -prop * log(prop))
+counties_prop$step1[is.na(counties_prop$step1)] <- 0
 
+counties_shannon <- counties_prop %>% 
+  group_by(., GEOID) %>% 
+  summarise(., numact = n(), 
+            H = sum(step1),
+            fedarea = unique(fed_inter_sum),
+            footprint = unique(county_area),
+            E = H/log(drop_units(fedarea)))
+counties_shannon$E <- ifelse(drop_units(counties_shannon$fedarea) == 0, 1, counties_shannon$E)
 
 

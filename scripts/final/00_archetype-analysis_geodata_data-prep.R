@@ -43,16 +43,6 @@ states <- states %>%
   filter(STUSPS != "AK" & STUSPS != "HI" & STUSPS != "DC") %>%
   filter(GEOID < 60)
 
-## First crop to the extents
-r_prec_crop <- crop(r_prec, ext(states))
-r_temp_crop <- crop(r_temp, ext(states))
-r_ele_crop <- crop(r_ele, ext(states))
-r_tt_crop <- crop(r_tt, ext(states))
-
-## Then set the projection of the rasters and recrop with mask = TRUE
-test <- project(r_prec_crop, states)
-test_conus <- crop(test, states, mask = TRUE)
-
 ## Function to crop to states extents, then reproject and crop again with mask = TRUE
 
 crop_project <- function(raster, states){
@@ -67,17 +57,6 @@ r_ele_conus <- crop_project(r_ele, states)
 r_tt_conus <- crop_project(r_tt, states)
 
 
-## Set the crs to the projection
-#crs(r_prec) <- proj
-#crs(r_temp) <- proj
-#crs(r_ele) <- proj
-#crs(r_tt) <- proj
-#statesp <- st_transform(states, crs(r_tt))
-
-r_prec_test <- project(r_prec_crop, states)
-#states_test <- st_transform(states, crs(r_prec_test))
-test_crop <- crop(r_prec_test, states, mask = TRUE)
 # 3. Resample to 1.5km and 3km resolution
 
-crs(r_prec_crop)
 

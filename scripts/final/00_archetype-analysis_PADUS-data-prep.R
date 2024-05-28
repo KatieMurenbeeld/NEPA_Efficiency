@@ -52,6 +52,7 @@ conus_fedp <- conus_fedp %>% st_cast("MULTIPOLYGON")
 
 # Turn off using spherical geometry
 sf_use_s2(FALSE)
+
 ## Check and fix validity
 all(st_is_valid(conus_fedp))
 conus_fedp_val <- st_make_valid(conus_fedp)
@@ -91,7 +92,7 @@ intersect_pct <- st_intersection(counties, conus_fedp_val) %>%
 # Create a fresh area variable for counties
 counties <- mutate(counties, county_area = st_area(counties))
 
-# Merge by county name
+# Merge by county FIPS (GEOID)
 counties <- merge(counties, intersect_pct, by = "GEOID", all.x = TRUE)
 
 # Calculate coverage and replace NA with 0
@@ -111,8 +112,8 @@ counties_sub <- counties %>%
 ## Calculate area and tidy up
 fed_intersect <- st_intersection(counties_sub, conus_fedp_val) %>% 
   mutate(fed_intersect = st_area(.)) %>% # create new column with shape area
-  group_by(GEOID, Mang_Name) %>% # group by GEOID
-  summarise(fed_inter_sum = sum(fed_intersect)) %>%
+  group_by(GEOID, Mang_Name) %>% # group by GEOID and the Fed agency name
+  summarise(fed_inter_sum = sum(fed_intersect)) %>% # sum the intersected areas
   dplyr::select(GEOID, Mang_Name, fed_inter_sum, intersect_area_sum, coverage) %>%   # only select columns needed to merge
   st_drop_geometry()
   

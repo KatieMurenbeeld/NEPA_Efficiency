@@ -10,7 +10,7 @@ library(terra)
 library(tigris)
 library(dplyr)
 
-proj <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83"
+#proj <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83"
 
 # Steps:
 # 0. Load libraries and set projection
@@ -43,19 +43,41 @@ states <- states %>%
   filter(STUSPS != "AK" & STUSPS != "HI" & STUSPS != "DC") %>%
   filter(GEOID < 60)
 
+## First crop to the extents
+r_prec_crop <- crop(r_prec, ext(states))
+r_temp_crop <- crop(r_temp, ext(states))
+r_ele_crop <- crop(r_ele, ext(states))
+r_tt_crop <- crop(r_tt, ext(states))
+
+## Then set the projection of the rasters and recrop with mask = TRUE
+test <- project(r_prec_crop, states)
+test_conus <- crop(test, states, mask = TRUE)
+
+## Function to crop to states extents, then reproject and crop again with mask = TRUE
+
+crop_project <- function(raster, states){
+  r_crop <- crop(raster, ext(states)) # First, crop to the extents of states
+  tmp <- project(r_crop, states) # Then, reproject the raster to crs of states
+  tmp_conus <- crop(tmp, states, mask = TRUE) # Finally, crop again with mask = TRUE
+}
+
+r_prec_conus <- crop_project(r_prec, states)
+r_temp_conus <- crop_project(r_temp, states)
+r_ele_conus <- crop_project(r_ele, states)
+r_tt_conus <- crop_project(r_tt, states)
+
+
 ## Set the crs to the projection
-crs(r_prec) <- proj
-crs(r_temp) <- proj
-crs(r_ele) <- proj
-crs(r_tt) <- proj
+#crs(r_prec) <- proj
+#crs(r_temp) <- proj
+#crs(r_ele) <- proj
+#crs(r_tt) <- proj
+#statesp <- st_transform(states, crs(r_tt))
 
-states <- st_transform(states, proj)
-
-r_prec_conus <- crop(r_prec, states, mask = TRUE)
-r_temp_conus <- crop(r_temp, states, mask = TRUE)
-r_ele_conus <- crop(r_ele, states, mask = TRUE)
-r_tt_conus <- crop(r_tt, states, mask = TRUE)
-
+r_prec_test <- project(r_prec_crop, states)
+#states_test <- st_transform(states, crs(r_prec_test))
+test_crop <- crop(r_prec_test, states, mask = TRUE)
 # 3. Resample to 1.5km and 3km resolution
 
+crs(r_prec_crop)
 

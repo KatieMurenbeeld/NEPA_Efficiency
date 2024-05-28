@@ -58,5 +58,31 @@ r_tt_conus <- crop_project(r_tt, states)
 
 
 # 3. Resample to 1.5km and 3km resolution
+## Using the WHP raster as a reference
+ref_rast1.5 <- rast(here::here("data/processed/merged/WHP_merge1500m.tif"))
+ref_rast3 <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
+
+resamp <- function(raster, ref_raster, method){
+  rast_proj <- project(raster, crs(ref_raster))
+  rast_resamp <- resample(rast_proj, ref_raster, method)
+}
+
+r_tt_1500 <- resamp(r_tt_conus, ref_rast1.5, "bilinear")
+r_tt_3000 <- resamp(r_tt_conus, ref_rast3, "bilinear")
+r_prec_1500 <- resamp(r_prec_conus, ref_rast1.5, "bilinear")
+r_prec_3000 <- resamp(r_prec_conus, ref_rast3, "bilinear")
+r_temp_1500 <- resamp(r_temp_conus, ref_rast1.5, "bilinear")
+r_temp_3000 <- resamp(r_temp_conus, ref_rast3, "bilinear")
 
 
+
+proj_test <- project(r_tt_conus, crs(proj))
+proj_test2 <- project(r_tt_conus, crs(ref_rast1.5))
+proj_test3 <- project(r_tt_conus, crs(ref_rast3))
+
+resamp_test <- resample(proj_test2, ref_rast1.5, method = "bilinear")
+resamp_test2 <- resample(proj_test3, ref_rast3, method = "bilinear")
+
+identical(crs(proj_test), crs(ref_rast1.5))
+identical(crs(proj_test2), crs(ref_rast1.5))
+identical(crs(proj_test3), crs(ref_rast3))

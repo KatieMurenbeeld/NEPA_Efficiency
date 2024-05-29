@@ -25,17 +25,8 @@ library(dismo) # needed to calculate biovars
 r_prec <- geodata::worldclim_country(country = "USA", var = "prec", res = 0.5, path = here::here("data/original/"))
 r_tmin <- geodata::worldclim_country(country = "USA", var = "tmin", res = 0.5, path = here::here("data/original"))
 r_tmax <- geodata::worldclim_country(country = "USA", var = "tmax", res = 0.5, path = here::here("data/original"))
-r_prec <- rast(here::here("data/original/wc2.1_country/USA_wc2.1_30s_prec.tif"))
-#r_temp <- geodata::worldclim_country(country = "USA", var = "tavg", res = 0.5, path = here::here("data/original/"))
-r_temp <- rast(here::here("data/original/wc2.1_country/USA_wc2.1_30s_tavg.tif"))
-#r_bio <- geodata::worldclim_country(country = "USA", var = "bio", res = 0.5, path = here::here("data/original/"))
-#r_bio <- rast(here::here("data/original/wc2.1_country/USA_wc2.1_30s_bio.tif"))
 r_ele <- geodata::elevation_30s(country = "US", path = here::here("data/original/"))
 r_tt <- geodata::travel_time(to = "city", size = 7, up = TRUE, path = here::here("data/original/"))
-
-## Get the mean annual temperature, temperature seasonality, precipitation, and precipitation seasonality 
-#temp_prec <- r_bio[[c(1, 4, 12, 15)]]
-#names(temp_prec) <- c("Temp", "Seas_T", "Prec", "Seas_P")
 
 # 2. Crop to CONUS
 ## Using tigris, download the state boundaries
@@ -55,7 +46,6 @@ crop_project <- function(raster, states){
 }
 
 r_prec_conus <- crop_project(r_prec, states)
-r_temp_conus <- crop_project(r_temp, states)
 r_ele_conus <- crop_project(r_ele, states)
 r_tt_conus <- crop_project(r_tt, states)
 r_tmin_conus <- crop_project(r_tmin, states)
@@ -82,13 +72,13 @@ r_tmax_3000 <- resamp(r_tmax_conus, ref_rast3, "bilinear")
 r_temp_1500 <- resamp(r_temp_conus, ref_rast1.5, "bilinear")
 r_temp_3000 <- resamp(r_temp_conus, ref_rast3, "bilinear")
 
-# Calculate the elevation "roughness" and resample
+## Calculate the elevation "roughness" and resample
 rough <- terrain(r_ele_conus, v = "roughness")
 
 r_rough_1500 <- resamp(rough, ref_rast1.5, "bilinear")
 r_rough_3000 <- resamp(rough, ref_rast3, "bilinear")
 
-# Calculate the "biovars". Only want precip (bio15) and temp (bio4) seasonality
+## Calculate the "biovars". Only want precip (bio15) and temp (bio4) seasonality
 bio_conus_1500 <- biovars(brick(r_prec_1500), brick(r_tmin_1500), brick(r_tmax_1500))
 bio_conus_3000 <- biovars(brick(r_prec_3000), brick(r_tmin_3000), brick(r_tmax_3000))
 

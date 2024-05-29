@@ -13,7 +13,7 @@ library(viridis)
 ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
 arch_attri <- rast(here::here("data/processed/arch_attri_05_2024-04-03.tif"))
 mill_dist <- rast(here::here("data/processed/mill_dist_open.tif"))
-mill_cap_hot <- rast(here::here("data/processed/test_hotspot.tif"))
+mill_change_cap <- rast(here::here("data/processed/millchangecap_interp-2.tif"))
 agc_flux <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_carbon_flux_ED_GEDI_ICESat2.tif")
 agc_stock <- rast("~/Analysis/NEPA_Efficiency/data/original/forest_aboveground_carbon_stock_ED_GEDI.tif")
 biodiver <- rast(here::here("data/original/distribute_RecognizedBiodiversityValue_2020_7_2020/RecognizedBiodiversityValue_USERC_2020_7_2.tif"))
@@ -51,7 +51,12 @@ hardwood <- c("Oak - Pine Group", "Oak - Hickory Group", "Oak - Gum - Cypress Gr
               "Tropical Hardwoods Group", "Aspen - Birch Group", "Exotic Hardwoos Group", 
               "Alder - Maple Group", "Wester Oak Group", "Tanoak - Laurel Group", 
               "Other Western Hardwoods Group")
-softwood <- c("")
+softwood <- c("White - Red - Jack Pine Group", "Spruce - Fir Group", "Longleaf - Slash Pine Group",
+              "Loblolly - Shortleaf Pine Group", "Exotic Softwoods Group", "Douglas-fir Group",
+              "Ponderosa Pine Group", "Pinyon - Juniper Group", "Western White Pine Group", 
+              "Fir - Spruce - Mountain Hemlock Group", "Lodgepole Pine Group", 
+              "Hemlock - Sitka Spruce Group", "Western Larch Group", "Redwood Group", 
+              "Other Western Softwoods Group", "California Mixed Conifer Group")
 
 
 # Check alignment 

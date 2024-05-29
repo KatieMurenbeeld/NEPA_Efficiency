@@ -22,8 +22,8 @@ library(dismo) # needed to calculate biovars
 
 # 1. Download the data using the geodata package
 
-#r_prec <- geodata::worldclim_country(country = "USA", var = "prec", res = 0.5, path = here::here("data/original/"))
-R_tmin <- geodata::worldclim_country(country = "USA", var = "tmin", res = 0.5, path = here::here("data/original"))
+r_prec <- geodata::worldclim_country(country = "USA", var = "prec", res = 0.5, path = here::here("data/original/"))
+r_tmin <- geodata::worldclim_country(country = "USA", var = "tmin", res = 0.5, path = here::here("data/original"))
 r_tmax <- geodata::worldclim_country(country = "USA", var = "tmax", res = 0.5, path = here::here("data/original"))
 r_prec <- rast(here::here("data/original/wc2.1_country/USA_wc2.1_30s_prec.tif"))
 #r_temp <- geodata::worldclim_country(country = "USA", var = "tavg", res = 0.5, path = here::here("data/original/"))
@@ -58,7 +58,7 @@ r_prec_conus <- crop_project(r_prec, states)
 r_temp_conus <- crop_project(r_temp, states)
 r_ele_conus <- crop_project(r_ele, states)
 r_tt_conus <- crop_project(r_tt, states)
-r_tmin_conus <- crop_project(R_tmin, states)
+r_tmin_conus <- crop_project(r_tmin, states)
 r_tmax_conus <- crop_project(r_tmax, states)
 
 # 3. Resample to 1.5km and 3km resolution
@@ -82,20 +82,33 @@ r_tmax_3000 <- resamp(r_tmax_conus, ref_rast3, "bilinear")
 r_temp_1500 <- resamp(r_temp_conus, ref_rast1.5, "bilinear")
 r_temp_3000 <- resamp(r_temp_conus, ref_rast3, "bilinear")
 
+# Calculate the elevation "roughness" and resample
+rough <- terrain(r_ele_conus, v = "roughness")
+
+r_rough_1500 <- resamp(rough, ref_rast1.5, "bilinear")
+r_rough_3000 <- resamp(rough, ref_rast3, "bilinear")
+
+# Calculate the "biovars". Only want precip (bio15) and temp (bio4) seasonality
 bio_conus_1500 <- biovars(brick(r_prec_1500), brick(r_tmin_1500), brick(r_tmax_1500))
 bio_conus_3000 <- biovars(brick(r_prec_3000), brick(r_tmin_3000), brick(r_tmax_3000))
 
 r_prec_seas_1500 <- bio_conus_1500$bio15
+r_temp_seas_1500 <- bio_conus_1500$bio4
+r_prec_seas_3000 <- bio_conus_3000$bio15
+r_temp_seas_3000 <- bio_conus_3000$bio4
 
-r_temp_seas_1500 <- bio_conus_1500$bio04
+# Write rasters (or create a stack and then write?)
+writeRaster(r_tt_1500, here::here("data/processed/trav_time_1500m.tif"), overwrite = TRUE)
+writeRaster(r_tt_3000, here::here("data/processed/trav_time_3000m.tif"), overwrite = TRUE)
+writeRaster(r_rough_1500, here::here("data/processed/roughness_1500m.tif"), overwrite = TRUE)
+writeRaster(r_rough_3000, here::here("data/processed/roughness_3000m.tif"), overwrite = TRUE)
+writeRaster(r_prec_seas_1500, here::here("data/processed/prec_seas_1500m.tif"), overwrite = TRUE)
+writeRaster(r_prec_seas_3000, here::here("data/processed/prec_seas_3000m.tif"), overwrite = TRUE)
+writeRaster(r_temp_seas_1500, here::here("data/processed/temp_seas_1500m.tif"), overwrite = TRUE)
+writeRaster(r_temp_seas_3000, here::here("data/processed/temp_seas_3000m.tif"), overwrite = TRUE)
 
-# Calculate the difference in temperature between summer and winter
-del_temp_1500 <- r_temp_1500$USA_wc2.1_30s_tavg_7 - r_temp_1500$USA_wc2.1_30s_tavg_1
-del_temp_3000 <- r_temp_3000$USA_wc2.1_30s_tavg_7 - r_temp_3000$USA_wc2.1_30s_tavg_1
-
-# Select and average summer rain (June, July, August)
-sum_prec_1500 <- sum(r_prec_1500$USA_wc2.1_30s_prec_6 + r_prec_1500$USA_wc2.1_30s_prec_7 + r_prec_1500$USA_wc2.1_30s_prec_8)/3
-win_prec_1500 <- sum(r_prec_1500$USA_wc2.1_30s_prec_12 + r_prec_1500$USA_wc2.1_30s_prec_1 + r_prec_1500$USA_wc2.1_30s_prec_2)/3
-
-# Write rasters
+rast_stack_1500 <- c(r_tt_1500, r_rough_1500, r_prec_1500, r_temp_1500)
+rast_stack_3000 <- c(r_tt_3000, r_rough_3000, r_prec_3000, r_temp_3000)
+writeRaster(rast_stack_1500, here::here("data/processed/clim_tt_1500.tif"), overwrite = TRUE)
+writeRaster(rast_stack_3000, here::here("data/processed/clim_tt_3000.tif"), overwrite = TRUE)
 

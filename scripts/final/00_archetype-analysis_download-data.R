@@ -122,8 +122,8 @@ file_name <- ""
 
 download_data(url, file_name)
 
-# Forest Dependence 
-url <- "https://www.fs.usda.gov/rds/archive/products/RDS-2021-0077/RDS-2021-0077.zip"
+# Forest Ownership
+url <- "https://www.fs.usda.gov/rds/archive/products/RDS-2020-0044/RDS-2020-0044.zip"
 file_name <- ""
 
 download_data(url, file_name)

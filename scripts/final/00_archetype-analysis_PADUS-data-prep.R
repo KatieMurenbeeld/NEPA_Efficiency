@@ -15,7 +15,7 @@ library(units)
 ## The download requires one to pass a CAPTCHA challenge 
 
 # 2. Load the data and filter for the contiguous US (CONUS)
-
+projection = "epsg:5070"
 ## Get list of states in the CONUS
 us.abbr <- unique(fips_codes$state)[1:51]
 us.name <- unique(fips_codes$state_name)[1:51]
@@ -44,8 +44,7 @@ conus_fed <- fed %>%
 rm(fed)
 
 # 3. Set the projection and check for shape validity and empty geometries
-conus_fedp <- st_transform(conus_fed, st_crs(counties))
-identical(st_crs(conus_fedp), st_crs(counties))
+conus_fedp <- conus_fed %>% st_transform(., crs = projection)
 
 ## Make the multisurface into multipolygons
 conus_fedp <- conus_fedp %>% st_cast("MULTIPOLYGON")
@@ -64,97 +63,79 @@ all(st_is_empty(conus_fedp_val))
 #conus_fedp_val_noempty = conus_fedp_val[!st_is_empty(conus_fedp_val),]
 #st_is_empty(conus_fedp_val_noempty)
 
+# 4. -----
+#----testing % area fed and % area fed type----
+ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
+ref_rast_proj <- project(ref_rast, projection)
+counties_proj <- counties %>% st_transform(., crs = projection)
 
-#----
-#4. Rasterize the data, may not need to do this until later? Save a shapefile instead?
-## Load the reference raster from fire-data-prep
-#ref_rast <- rast(here::here("data/processed/merged/WHP_merge3000m.tif"))
+conus_cells <- st_make_grid(counties_proj, cellsize = 3000)
 
-## Set to the same projection
-#conus_fed_val_noempty_p <- st_transform(conus_fedp_val_noempty, crs(ref_rast))
+conus_cells <- st_sf(conus_cells) 
 
-## Rasterize the data and write the raster
-#fed_rast <- rasterize(vect(conus_fed_val_noempty_p), ref_rast, field = "Mang_Name")
-#writeRaster(fed_rast, here::here("data/processed/fed_lands_3000m.tif"), overwrite = TRUE)
-#----
+# add unique cell id
+conus_cells <- conus_cells %>% 
+  mutate(GRIDCELL_REFID = as.character(row_number()))
 
-# 5. Calculate the area of overlapping Fed and county polygons (maybe I didn't need to figure out the rasterization yet...)
-## from stack overflow https://gis.stackexchange.com/questions/362466/calculate-percentage-overlap-of-2-sets-of-polygons-in-r
+## Create a template raster for the shapefiles
+XMIN <- ext(conus_cells)$xmin
+XMAX <- ext(conus_cells)$xmax
+YMIN <- ext(conus_cells)$ymin
+YMAX <- ext(conus_cells)$ymax
+aspectRatio <- (YMAX-YMIN)/(XMAX-XMIN)
+cellSize <- 3000
+NCOLS <- as.integer((XMAX-XMIN)/cellSize)
+NROWS <- as.integer(NCOLS * aspectRatio)
+conus_cells_rst <- rast(ncol=NCOLS, nrow=NROWS, 
+                        xmin=XMIN, xmax=XMAX, ymin=YMIN, ymax=YMAX,
+                        vals=1, crs=projection)
 
-## Calculate area and tidy up
-intersect_pct <- st_intersection(counties, conus_fedp_val) %>% 
-  mutate(intersect_area = st_area(.)) %>% # create new column with shape area
-  group_by(GEOID) %>% # group by GEOID
-  summarise(intersect_area_sum = sum(intersect_area)) %>% # add the intersect areas
-  dplyr::select(GEOID, intersect_area_sum) %>%   # only select columns needed to merge
-  st_drop_geometry()  # drop geometry as we don't need it
 
-# Create a fresh area variable for counties
-counties <- mutate(counties, county_area = st_area(counties))
+conus_fed_type <- conus_fedp_val %>%
+  dplyr::select(Mang_Type)
 
-# Merge by county FIPS (GEOID)
-counties <- merge(counties, intersect_pct, by = "GEOID", all.x = TRUE)
+conus_fed_type_proj <- conus_fed_type %>% st_transform(., crs = projection) #%>%
+#st_cast(., to = "POLYGON")
 
-# Calculate coverage and replace NA with 0
-counties <- counties %>% 
-  mutate(coverage = as.numeric(intersect_area_sum/county_area))
-counties$coverage[is.na(counties$coverage)] <- 0
+# Replace NAs with 0
+conus_fed_type_proj[is.na(conus_fed_type_proj)] <- 0
+saveRDS(conus_fed_type_proj, here::here("data/processed/conus_fed_type_proj_na_0.rds"))
 
-counties_sub <- counties %>%
-  dplyr::select(GEOID, intersect_area_sum, coverage)
+# for different Federal agencies
+conus_fed_type_int <- st_intersection(conus_cells, conus_fed_type_proj)
+saveRDS(conus_fed_type_int, here::here("data/processed/conus_fed_type_int.rds"))
+conus_fed_type_areas <- conus_fed_type_int %>%
+  mutate(area = st_area(.)) %>%
+  mutate(percent_area = drop_units(area) / (3000*3000))
+saveRDS(conus_fed_type_areas, here::here("data/processed/conus_fed_type_int_pctarea.rds"))
 
-## save as a shapefile
-#write_sf(obj = counties, dsn = paste0(here::here("data/processed/"), "county_fed_gov_coverage_pct", Sys.Date(), ".shp"), overwrite = TRUE, append = FALSE)
-#print("new shapefile written")
+# Calculate the Shannon Evenness
+conus_fed_type_areas_prop <- conus_fed_type_areas %>% 
+  mutate(step1 = -percent_area * log(percent_area))
+#id_fed_all_areas_prop$step1[is.na(id_fed_all_areas_prop$step1)] <- 0
 
-# 6. Calculate the Shannon Diversity Index for Federal ownership by county
-
-## Calculate area and tidy up
-fed_intersect <- st_intersection(counties_sub, conus_fedp_val) %>% 
-  mutate(fed_intersect = st_area(.)) %>% # create new column with shape area
-  group_by(GEOID, Mang_Name) %>% # group by GEOID and the Fed agency name
-  summarise(fed_inter_sum = sum(fed_intersect)) %>% # sum the intersected areas
-  dplyr::select(GEOID, Mang_Name, fed_inter_sum, intersect_area_sum, coverage) %>%   # only select columns needed to merge
-  st_drop_geometry()
-  
-# Create a fresh area variable for counties
-counties_join <- mutate(counties, county_area = drop_units(st_area(counties)))
-
-# Merge by county name
-counties_join <- merge(counties_join, drop_units(fed_intersect), by = "GEOID", all.x = TRUE)
-counties_join$fed_inter_sum[is.na(counties_join$fed_inter_sum)] <- 0
-
-# Calculate Shannon Index and replace NA with 0
-counties_prop <- counties_join %>% 
-  mutate(., prop = fed_inter_sum/county_area,
-         step1 = -prop * log(prop))
-counties_prop$step1[is.na(counties_prop$step1)] <- 0
-
-counties_fed_rich <- counties_prop %>%
-  group_by(., GEOID) %>%
+conus_fed_rich <- conus_fed_type_areas %>%
+  group_by(., GRIDCELL_REFID) %>%
   summarise(., numfed = n())
 
-counties_shannon <- counties_prop %>% 
-  drop_na(Mang_Name) %>%
-  group_by(., GEOID) %>% 
+conus_shannon <- conus_fed_type_areas_prop %>% 
+  group_by(., GRIDCELL_REFID) %>% 
   summarise(., numfed = n(), 
             H = sum(step1),
-            fedarea = unique(fed_inter_sum),
-            footprint = unique(county_area),
-            E = H/log((fedarea)))
-counties_shannon$E <- ifelse(drop_units(counties_shannon$fedarea) == 0, 1, counties_shannon$E)
+            fedarea = sum(unique(drop_units(area))),
+            E = H/log(fedarea))
 
-shannon_diversity <- counties_prop %>%
-  group_by(., GEOID) %>%
-  summarise(H = sum(step1))
+conus_shan_rich_rast <- rasterize(conus_shannon, conus_cells_rst, field = "numfed")
+conus_shan_rich_rast[is.na(conus_shan_rich_rast)] <- 0
+writeRaster(conus_shan_rich_rast, here::here("data/processed/conus_fed_rich_na0.tif"))
+conus_shan_E_rast <- rasterize(conus_shannon, conus_cells_rst, field = "E")
+writeRaster(conus_shan_E_rast, here::here("data/processed/conus_fed_E.tif"))
 
-shannon <- counties_prop %>%
-  drop_na(Mang_Name) %>%
-  group_by(., GEOID) %>%
-  summarise(., numfed = n(), 
-            H = sum(step1)) %>%
-  dplyr::select(GEOID, numfed, H) %>%
-  st_drop_geometry()
+plot(conus_shan_rich_rast)
+conus_shan_rich_rast
+conus_shan_rich_rast[is.na(conus_shan_rich_rast)] <- 0
+plot(conus_shan_rich_rast)
 
-counties_shannon <- left_join(counties, shannon)
+
+
 

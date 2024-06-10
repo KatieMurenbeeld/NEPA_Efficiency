@@ -136,6 +136,29 @@ conus_shan_rich_rast
 conus_shan_rich_rast[is.na(conus_shan_rich_rast)] <- 0
 plot(conus_shan_rich_rast)
 
+# Try out the % area governed by a Federal agency. I think the other project may be stuck
+#conus_fed_name_proj <- conus_fed_name %>% st_transform(., crs = "epsg:5070")
 
+# for all Federal agencies need to union first otherwise I got >1.00 percent_area
+#conus_fed_union <- conus_fed_type_proj %>%
+#  st_crop(., conus_cells) %>%
+#  st_union(.)
 
+#saveRDS(conus_fed_union, here::here("data/processed/conus_fed_union.rds"))
+conus_fed_union <- readRDS("~/Analysis/Archetype_Analysis/data/processed/conus_fed_union.rds")
 
+# intersection for all Fed fee lands
+#d[is.na(d)] <- 0
+#conus_fed_union[is.na(conus_fed_union)] <- 0
+#saveRDS(conus_fed_union, here::here("data/processed/conus_fed_union_na_0.rds"))
+conus_fed_union_na_0 <- readRDS("~/Analysis/Archetype_Analysis/data/processed/conus_fed_union_na_0.rds")
+
+conus_fed_uni_int <- st_intersection(conus_cells, conus_fed_union_na_0)
+#saveRDS(conus_fed_uni_int, here::here("data/processed/conus_fed_uni_int.rds"))
+saveRDS(conus_fed_uni_int, "~/Analysis/Archetype_Analysis/data/processed/conus_fed_uni_int.rds")
+conus_fed_uni_int <- conus_fed_uni_int %>%
+  mutate(area = st_area(.)) %>%
+  mutate(percent_area = drop_units(area) / (3000*3000)) # add another field if percent area is NA return 0 else return percent area
+conus_fed_uni_rast <- rasterize(conus_fed_uni_int, conus_cells_rst, field = "percent_area")
+plot(id_fed_uni_rast)
+writeRaster(conus_fed_uni_rast, here::here("data/processed/fed_area_3km_conus_", Sys.Date(), ".tif"))
